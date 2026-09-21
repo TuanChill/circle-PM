@@ -1,0 +1,34 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    "composite": true,
+    "jsx": "react-jsx",
+    // Deliberately empty: `paths` replaces rather than merges with the parent's,
+    // shadowing the root `@app/*` -> source mappings. Apps must resolve the libs
+    // through the pnpm symlink to their built output, which is what the SWC
+    // builder emits requires for at runtime.
+    "paths": {}
+  },
+  "references": [{ "path": "../../libs/common" }, { "path": "../../libs/core" }],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "include": ["./src"]
+}
