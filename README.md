@@ -23,6 +23,7 @@ A high-performance, monorepo microservices platform built with NestJS, optimized
   * [🧭 API Gateways](#-api-gateways)
   * [⚙️ Microservices](#-microservices)
   * [🧰 Tools & Management UI](#-tools--management-ui)
+* [🗄️ Production database access](#-production-database-access)
 * [🔐 Demo API — Sign-Up & Login (cURL)](#-demo-api--sign-up--login-curl)
   * [Sign-Up](#sign-up)
   * [Login](#login)
@@ -330,6 +331,10 @@ docker compose run --rm kong-deck gateway sync /app/kong-dev.yaml
 | Kafka UI      | [http://localhost:18082](http://localhost:18082) |
 | Kong Manager  | [http://localhost:18086](http://localhost:18086) |
 | APISIX Dashboard| http://localhost:`APISIX_DEPLOYMENT_ADMIN_LISTEN`/ui |
+
+## 🗄️ Production database access
+
+Connect to the production PostgreSQL database through an SSH tunnel. The database port is bound to the server's loopback interface only. See [docs/database-access.md](./docs/database-access.md) for the SSH tunnel and database-client settings.
 
 
 ---
