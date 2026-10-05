@@ -28,7 +28,7 @@ export function middleware(request: NextRequest) {
 
    // If accessing auth page while already logged in -> redirect to default/previously opened workspace
    // Invitation signups are an exception: the signup page accepts the invitation
-   // for the authenticated member before navigating to the invited workspace.
+   // token for the authenticated member before navigating to the invited workspace.
    if (isAuthPage && accessToken && !isInvitationSignup) {
       const lastWorkspace = getSavedWorkspaceFromRequest(request);
       const url = request.nextUrl.clone();
