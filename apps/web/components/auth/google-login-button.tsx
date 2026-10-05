@@ -84,20 +84,20 @@ export function GoogleLoginButton({ text = 'Continue with Google' }: GoogleLogin
             toast.success(`Welcome, ${profile.name}!`);
             const savedWorkspace = getActiveWorkspace();
             const destinationSlug =
-               savedWorkspace || invitedWorkspace?.slug || res?.workspace?.slug;
+               invitedWorkspace?.slug || savedWorkspace || res?.workspace?.slug;
             if (destinationSlug) {
                saveActiveWorkspace(destinationSlug);
             }
             const targetUrl =
-               searchParams.get('redirect') ||
                (invitedWorkspace?.slug
                   ? ROUTES.WORKSPACE.MY_ISSUES(invitedWorkspace.slug)
-                  : res?.isNewUser
-                    ? ROUTES.ONBOARDING
-                    : destinationSlug
-                      ? ROUTES.WORKSPACE.MY_ISSUES(destinationSlug)
-                      : ROUTES.ONBOARDING);
-            router.push(targetUrl);
+                  : searchParams.get('redirect')) ||
+               (res?.isNewUser
+                  ? ROUTES.ONBOARDING
+                  : destinationSlug
+                    ? ROUTES.WORKSPACE.MY_ISSUES(destinationSlug)
+                    : ROUTES.ONBOARDING);
+            router.replace(targetUrl);
          } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Google Sign-in failed';
             toast.error(message);

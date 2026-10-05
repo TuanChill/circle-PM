@@ -18,6 +18,7 @@ interface AuthState {
    accessToken: string | null;
    isAuthenticated: boolean;
    isLoading: boolean;
+   isSessionInitialized: boolean;
 
    initSession: () => void;
    login: (payload: LoginPayload) => Promise<AuthResponse>;
@@ -32,6 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
    accessToken: null,
    isAuthenticated: false,
    isLoading: false,
+   isSessionInitialized: false,
 
    initSession: () => {
       const token = getCookie('accessToken');
@@ -50,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: token,
             user: parsedUser,
             isAuthenticated: true,
+            isSessionInitialized: true,
          });
       } else {
          removeCookie('accessToken');
@@ -59,6 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: null,
             user: null,
             isAuthenticated: false,
+            isSessionInitialized: true,
          });
       }
    },
@@ -85,6 +89,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: res.accessToken,
             isAuthenticated: true,
             isLoading: false,
+            isSessionInitialized: true,
          });
          return res;
       } catch (err) {
@@ -115,6 +120,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: res.accessToken,
             isAuthenticated: true,
             isLoading: false,
+            isSessionInitialized: true,
          });
          return res;
       } catch (err) {
@@ -145,6 +151,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: res.accessToken,
             isAuthenticated: true,
             isLoading: false,
+            isSessionInitialized: true,
          });
          return res;
       } catch (err) {
@@ -167,6 +174,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             accessToken: null,
             isAuthenticated: false,
             isLoading: false,
+            isSessionInitialized: true,
          });
          if (typeof window !== 'undefined') {
             window.location.href = '/login';

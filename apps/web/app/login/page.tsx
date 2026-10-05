@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GoogleLoginButton } from '@/components/auth/google-login-button';
 import { ROUTES } from '@/constants/routes';
+import { useJoinWorkspace } from '@/hooks/queries';
 import { getActiveWorkspace, saveActiveWorkspace } from '@/lib/utils/workspace-persistence';
 
 const loginSchema = z.object({
@@ -27,8 +28,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 function LoginForm() {
    const router = useRouter();
    const searchParams = useSearchParams();
+   const invitationToken = searchParams.get('invite');
+   const inviteEmail = searchParams.get('email') || '';
 
    const { login, isLoading } = useAuthStore();
+   const joinWorkspaceMutation = useJoinWorkspace();
    const [showPassword, setShowPassword] = React.useState(false);
 
    const {
@@ -38,7 +42,7 @@ function LoginForm() {
    } = useForm<LoginFormValues>({
       resolver: zodResolver(loginSchema),
       defaultValues: {
-         email: '',
+         email: inviteEmail,
          password: '',
       },
    });
@@ -46,16 +50,21 @@ function LoginForm() {
    const onSubmit = async (data: LoginFormValues) => {
       try {
          const res = await login(data);
+         const invitedWorkspace = invitationToken
+            ? await joinWorkspaceMutation.mutateAsync({ invitationToken })
+            : undefined;
          toast.success('Welcome back!');
          const savedWorkspace = getActiveWorkspace();
-         const destinationSlug = savedWorkspace || res?.workspace?.slug;
+         const destinationSlug = invitedWorkspace?.slug || savedWorkspace || res?.workspace?.slug;
          if (destinationSlug) {
             saveActiveWorkspace(destinationSlug);
          }
          const targetUrl =
-            searchParams.get('redirect') ||
+            (invitedWorkspace?.slug
+               ? ROUTES.WORKSPACE.MY_ISSUES(invitedWorkspace.slug)
+               : searchParams.get('redirect')) ||
             (destinationSlug ? ROUTES.WORKSPACE.MY_ISSUES(destinationSlug) : ROUTES.ONBOARDING);
-         router.push(targetUrl);
+         router.replace(targetUrl);
       } catch (err: unknown) {
          const message = err instanceof Error ? err.message : 'Invalid email or password';
          toast.error(message);
@@ -188,7 +197,11 @@ function LoginForm() {
          <p className="text-xs text-muted-foreground mt-6 text-center">
             Don&apos;t have an account?{' '}
             <Link
-               href={ROUTES.AUTH.SIGNUP}
+               href={
+                  invitationToken
+                     ? ROUTES.AUTH.SIGNUP_WITH_INVITATION(invitationToken, inviteEmail)
+                     : ROUTES.AUTH.SIGNUP
+               }
                className="font-medium text-foreground hover:underline transition-all"
             >
                Sign up

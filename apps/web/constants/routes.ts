@@ -5,9 +5,20 @@
 
 export const ROUTES = {
    // Public & Auth Routes
+   INVITE: '/invite',
    AUTH: {
       LOGIN: '/login',
       SIGNUP: '/signup',
+      SIGNUP_WITH_INVITATION: (token: string, email?: string) => {
+         const params = new URLSearchParams({ invite: token });
+         if (email) params.set('email', email);
+         return `/signup?${params.toString()}`;
+      },
+      LOGIN_WITH_INVITATION: (token: string, email?: string) => {
+         const params = new URLSearchParams({ invite: token });
+         if (email) params.set('email', email);
+         return `/login?${params.toString()}`;
+      },
       FORGOT_PASSWORD: '/forgot-password',
       RESET_PASSWORD: '/reset-password',
    },

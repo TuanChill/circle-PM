@@ -31,7 +31,7 @@ function SignUpForm() {
    const searchParams = useSearchParams();
    const inviteEmail = searchParams.get('email') || '';
    const invitationToken = searchParams.get('invite');
-   const { signUp, isAuthenticated, isLoading } = useAuthStore();
+   const { signUp, isAuthenticated, isLoading, isSessionInitialized } = useAuthStore();
    const joinWorkspaceMutation = useJoinWorkspace();
    const [showPassword, setShowPassword] = React.useState(false);
    const hasAcceptedInvitation = React.useRef(false);
@@ -50,7 +50,14 @@ function SignUpForm() {
    });
 
    React.useEffect(() => {
-      if (!isAuthenticated || !invitationToken || hasAcceptedInvitation.current) return;
+      if (
+         !isSessionInitialized ||
+         !isAuthenticated ||
+         !invitationToken ||
+         hasAcceptedInvitation.current
+      ) {
+         return;
+      }
 
       hasAcceptedInvitation.current = true;
       void joinWorkspaceMutation
@@ -62,15 +69,17 @@ function SignUpForm() {
          .catch(() => {
             // The mutation displays the invitation error and leaves the page available.
          });
-   }, [invitationToken, isAuthenticated, joinWorkspaceMutation, router]);
+   }, [invitationToken, isAuthenticated, isSessionInitialized, joinWorkspaceMutation, router]);
 
    const onSubmit = async (data: SignupFormValues) => {
       try {
+         if (invitationToken) hasAcceptedInvitation.current = true;
          await signUp(data);
 
          if (invitationToken) {
             const workspace = await joinWorkspaceMutation.mutateAsync({ invitationToken });
-            router.push(ROUTES.WORKSPACE.MY_ISSUES(workspace.slug));
+            saveActiveWorkspace(workspace.slug);
+            router.replace(ROUTES.WORKSPACE.MY_ISSUES(workspace.slug));
             return;
          }
 
@@ -225,7 +234,11 @@ function SignUpForm() {
          <p className="text-xs text-muted-foreground mt-6 text-center">
             Already have an account?{' '}
             <Link
-               href={ROUTES.AUTH.LOGIN}
+               href={
+                  invitationToken
+                     ? ROUTES.AUTH.LOGIN_WITH_INVITATION(invitationToken, inviteEmail)
+                     : ROUTES.AUTH.LOGIN
+               }
                className="font-medium text-foreground hover:underline transition-all"
             >
                Log in

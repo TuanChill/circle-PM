@@ -1,5 +1,6 @@
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { Injectable, Logger } from '@nestjs/common';
+import { buildInvitationUrl } from '../workspaces/invitation-url';
 
 export interface SendInviteEmailOptions {
   to: string;
@@ -57,17 +58,15 @@ export class SesMailerService {
 
   async sendMemberInviteEmail(options: SendInviteEmailOptions): Promise<boolean> {
     const org = options.orgName.trim();
-    const orgSlug = options.orgSlug.trim();
     const inviter = options.inviterName.trim();
     const frontendUrl = process.env.FRONTEND_URL?.trim();
-    if (!org || !orgSlug || !inviter || !frontendUrl) {
+    const joinUrl = buildInvitationUrl(frontendUrl, options.inviteToken, options.to);
+    if (!org || !inviter || !joinUrl) {
       this.logger.error(
         'Invitation email was not sent because workspace, inviter, or frontend context is missing',
       );
       return false;
     }
-    const joinUrl = `${frontendUrl}/signup?org=${encodeURIComponent(orgSlug)}&email=${encodeURIComponent(options.to)}&invite=${encodeURIComponent(options.inviteToken)}`;
-
     const htmlContent = `
 <!DOCTYPE html>
 <html>

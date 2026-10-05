@@ -25,6 +25,7 @@ export function middleware(request: NextRequest) {
       pathname === ROUTES.AUTH.RESET_PASSWORD;
    const isInvitationSignup =
       pathname === ROUTES.AUTH.SIGNUP && Boolean(request.nextUrl.searchParams.get('invite'));
+   const isInvitationPage = pathname === ROUTES.INVITE;
 
    // If accessing auth page while already logged in -> redirect to default/previously opened workspace
    // Invitation signups are an exception: the signup page accepts the invitation
@@ -39,7 +40,7 @@ export function middleware(request: NextRequest) {
    }
 
    // If accessing protected workspace without token -> redirect to login
-   if (!isAuthPage && !accessToken && pathname !== '/') {
+   if (!isAuthPage && !isInvitationPage && !accessToken && pathname !== '/') {
       const url = request.nextUrl.clone();
       url.pathname = ROUTES.AUTH.LOGIN;
       url.searchParams.set('redirect', pathname);

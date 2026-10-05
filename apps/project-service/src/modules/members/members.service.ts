@@ -18,6 +18,7 @@ import {
 import { canManageWorkspaceRole } from '../access-control';
 import { SesMailerService } from '../email/ses-mailer.service';
 import { createInvitationToken } from '../workspaces/invitation-token';
+import { buildInvitationUrl } from '../workspaces/invitation-url';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
@@ -225,10 +226,11 @@ export class MembersService {
         .catch((err) => console.error('Failed to send invite email:', err));
     }
 
-    const frontendUrl = process.env.FRONTEND_URL?.trim();
-    const inviteUrl = frontendUrl
-      ? `${frontendUrl}/signup?org=${encodeURIComponent(workspace?.slug ?? '')}&email=${encodeURIComponent(invitation.email)}&invite=${encodeURIComponent(token)}`
-      : undefined;
+    const inviteUrl = buildInvitationUrl(
+      process.env.FRONTEND_URL,
+      token,
+      invitation.email,
+    );
 
     return {
       invitationId: invitation.id,

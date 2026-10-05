@@ -32,6 +32,20 @@ jest.mock('../../data-access', () => {
 });
 
 describe('MembersService invitations', () => {
+  const originalFrontendUrl = process.env.FRONTEND_URL;
+
+  beforeEach(() => {
+    process.env.FRONTEND_URL = 'https://app.example.test';
+  });
+
+  afterEach(() => {
+    if (originalFrontendUrl === undefined) {
+      delete process.env.FRONTEND_URL;
+    } else {
+      process.env.FRONTEND_URL = originalFrontendUrl;
+    }
+  });
+
   it('stores a pending invitation instead of a placeholder member', async () => {
     const workspace = { id: 'workspace-1', name: 'Acme', slug: 'acme' };
     const actor = { id: 'owner-1', name: 'Owner' };
@@ -69,6 +83,9 @@ describe('MembersService invitations', () => {
       expect.objectContaining({
         email: 'invitee@example.com',
         invitationId: expect.any(String),
+        inviteUrl: expect.stringMatching(
+          /^https:\/\/app\.example\.test\/invite\?token=[^&]+&email=invitee%40example\.com$/,
+        ),
       }),
     );
     expect(persisted).toHaveLength(1);
@@ -79,6 +96,8 @@ describe('MembersService invitations', () => {
         inviteToken: expect.any(String),
       }),
     );
+    expect(result.inviteUrl).not.toContain('org=');
+    expect(result.inviteUrl).not.toContain('/signup');
   });
 
   it('rejects an invitation without a real invitee name', async () => {
