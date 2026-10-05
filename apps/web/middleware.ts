@@ -23,9 +23,13 @@ export function middleware(request: NextRequest) {
       pathname === ROUTES.AUTH.SIGNUP ||
       pathname === ROUTES.AUTH.FORGOT_PASSWORD ||
       pathname === ROUTES.AUTH.RESET_PASSWORD;
+   const isInvitationSignup =
+      pathname === ROUTES.AUTH.SIGNUP && Boolean(request.nextUrl.searchParams.get('invite'));
 
    // If accessing auth page while already logged in -> redirect to default/previously opened workspace
-   if (isAuthPage && accessToken) {
+   // Invitation signups are an exception: the signup page accepts the invitation
+   // for the authenticated member before navigating to the invited workspace.
+   if (isAuthPage && accessToken && !isInvitationSignup) {
       const lastWorkspace = getSavedWorkspaceFromRequest(request);
       const url = request.nextUrl.clone();
       url.pathname = lastWorkspace

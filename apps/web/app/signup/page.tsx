@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { GoogleLoginButton } from '@/components/auth/google-login-button';
 import { ROUTES } from '@/constants/routes';
 import { useJoinWorkspace } from '@/hooks/queries';
+import { saveActiveWorkspace } from '@/lib/utils/workspace-persistence';
 
 const signupSchema = z.object({
    name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -30,9 +31,10 @@ function SignUpForm() {
    const searchParams = useSearchParams();
    const inviteEmail = searchParams.get('email') || '';
    const invitationToken = searchParams.get('invite');
-   const { signUp, isLoading } = useAuthStore();
+   const { signUp, isAuthenticated, isLoading } = useAuthStore();
    const joinWorkspaceMutation = useJoinWorkspace();
    const [showPassword, setShowPassword] = React.useState(false);
+   const hasAcceptedInvitation = React.useRef(false);
 
    const {
       register,
@@ -46,6 +48,21 @@ function SignUpForm() {
          password: '',
       },
    });
+
+   React.useEffect(() => {
+      if (!isAuthenticated || !invitationToken || hasAcceptedInvitation.current) return;
+
+      hasAcceptedInvitation.current = true;
+      void joinWorkspaceMutation
+         .mutateAsync({ invitationToken })
+         .then((workspace) => {
+            saveActiveWorkspace(workspace.slug);
+            router.replace(ROUTES.WORKSPACE.MY_ISSUES(workspace.slug));
+         })
+         .catch(() => {
+            // The mutation displays the invitation error and leaves the page available.
+         });
+   }, [invitationToken, isAuthenticated, joinWorkspaceMutation, router]);
 
    const onSubmit = async (data: SignupFormValues) => {
       try {
