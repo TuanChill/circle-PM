@@ -262,7 +262,20 @@ export function CreateNewIssue() {
 
    return (
       <Dialog open={isOpen} onOpenChange={(value) => (value ? openModal() : closeModal())}>
-         <DialogContent className="w-full sm:max-w-[750px] p-0 shadow-xl top-[30%]">
+         <DialogContent
+            className="w-full sm:max-w-[750px] p-0 shadow-xl top-[30%]"
+            onInteractOutside={(event) => {
+               // Picker popovers render in a portal outside the dialog content.
+               // Treat their interactions as inside so choosing an option keeps
+               // the issue form open.
+               if (
+                  event.target instanceof Element &&
+                  event.target.closest('[data-slot="popover-content"]')
+               ) {
+                  event.preventDefault();
+               }
+            }}
+         >
             <DialogHeader>
                <DialogTitle>
                   <div className="flex items-center px-4 pt-4 gap-2">
