@@ -484,7 +484,6 @@ export class SeedService {
         const act = new IssueActivity({
           issueIdentifier: identifier,
           actorId: assigneeId,
-          kind: 'event',
           event: 'created',
           text: 'created this issue',
         });

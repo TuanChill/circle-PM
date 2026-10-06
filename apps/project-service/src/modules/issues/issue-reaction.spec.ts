@@ -1,14 +1,15 @@
 import type { EntityManager } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import { IssuesService } from './issues.service';
-import { Issue, IssueActivity } from '../../data-access';
+import { Issue, IssueComment } from '../../data-access';
 
 jest.mock('@mikro-orm/core', () => ({
   EntityManager: class MockEntityManager {},
+  LockMode: { PESSIMISTIC_WRITE: 'pessimistic_write' },
 }));
 
 jest.mock('../../data-access', () => {
-  class MockIssueActivity {
+  class MockIssueComment {
     id?: string;
     issueIdentifier?: string;
     reactions?: unknown[];
@@ -27,15 +28,15 @@ jest.mock('../../data-access', () => {
     }
   }
 
-  return { Issue: MockIssue, IssueActivity: MockIssueActivity };
+  return { Issue: MockIssue, IssueComment: MockIssueComment };
 });
 
 describe('IssuesService reactions', () => {
-  function buildService(activity: IssueActivity, accessibleTeamIds = ['team-1']) {
+  function buildService(comment: IssueComment, accessibleTeamIds = ['team-1']) {
     const issue = new Issue({ identifier: 'ENG-1', teamId: 'team-1' });
     const em = {
       findOne: jest.fn(async (entity: unknown) => {
-        if (entity === IssueActivity) return activity;
+        if (entity === IssueComment) return comment;
         if (entity === Issue) return issue;
         return null;
       }),
@@ -51,48 +52,44 @@ describe('IssuesService reactions', () => {
   }
 
   it('removes only the authenticated member from a reaction', async () => {
-    const activity = new IssueActivity({
-      id: 'activity-1',
+    const comment = new IssueComment({
+      id: 'comment-1',
       issueIdentifier: 'ENG-1',
       reactions: [{ emoji: '👍', count: 2, userIds: ['member-1', 'member-2'] }],
     });
-    const { em, service } = buildService(activity);
+    const { em, service } = buildService(comment);
 
-    await service.removeReaction('activity-1', '👍', 'member-1');
+    await service.removeReaction('comment-1', '👍', 'member-1');
 
-    expect(activity.reactions).toEqual([
-      { emoji: '👍', count: 1, userIds: ['member-2'] },
-    ]);
+    expect(comment.reactions).toEqual([{ emoji: '👍', count: 1, userIds: ['member-2'] }]);
     expect(em.flush).toHaveBeenCalledTimes(1);
   });
 
   it('removes the reaction record when the last member toggles it off', async () => {
-    const activity = new IssueActivity({
-      id: 'activity-1',
+    const comment = new IssueComment({
+      id: 'comment-1',
       issueIdentifier: 'ENG-1',
       reactions: [{ emoji: '👍', count: 1, userIds: ['member-1'] }],
     });
-    const { service } = buildService(activity);
+    const { service } = buildService(comment);
 
-    await service.removeReaction('activity-1', '👍', 'member-1');
+    await service.removeReaction('comment-1', '👍', 'member-1');
 
-    expect(activity.reactions).toEqual([]);
+    expect(comment.reactions).toEqual([]);
   });
 
   it('does not mutate reactions for an inaccessible issue team', async () => {
-    const activity = new IssueActivity({
-      id: 'activity-1',
+    const comment = new IssueComment({
+      id: 'comment-1',
       issueIdentifier: 'ENG-1',
       reactions: [{ emoji: '👍', count: 1, userIds: ['member-1'] }],
     });
-    const { em, service } = buildService(activity, []);
+    const { em, service } = buildService(comment, []);
 
-    await expect(service.removeReaction('activity-1', '👍', 'member-1')).rejects.toThrow(
+    await expect(service.removeReaction('comment-1', '👍', 'member-1')).rejects.toThrow(
       NotFoundException,
     );
     expect(em.flush).not.toHaveBeenCalled();
-    expect(activity.reactions).toEqual([
-      { emoji: '👍', count: 1, userIds: ['member-1'] },
-    ]);
+    expect(comment.reactions).toEqual([{ emoji: '👍', count: 1, userIds: ['member-1'] }]);
   });
 });

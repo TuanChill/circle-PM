@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   ArrayUnique,
   IsArray,
   IsEnum,
@@ -8,6 +9,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
 
@@ -208,6 +210,14 @@ export class CreateCommentDto {
   @IsOptional()
   @Type(() => Object)
   commentBlocks?: any[];
+
+  @ApiPropertyOptional({ type: [String], uniqueItems: true, maxItems: 10 })
+  @IsArray()
+  @ArrayMaxSize(10)
+  @ArrayUnique()
+  @IsUUID('all', { each: true })
+  @IsOptional()
+  attachmentIds?: string[];
 }
 
 export class AddReactionDto {

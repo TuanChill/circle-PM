@@ -69,6 +69,31 @@ describe('UploadsService', () => {
     expect(em.persist).not.toHaveBeenCalled();
   });
 
+  it('excludes comment-linked files from issue-level attachment results', async () => {
+    workspacesService.getAccessibleTeamIds.mockResolvedValue(['team-1']);
+    em.findOne.mockImplementation(async (entity: unknown) => {
+      if (entity === Issue) return new Issue({ identifier: 'ENG-1', teamId: 'team-1' });
+      if (entity === Team) return new Team({ id: 'team-1', workspaceId: 'ws-1' });
+      return null;
+    });
+    em.find.mockResolvedValue([]);
+    const service = new UploadsService(
+      em as any,
+      workspacesService as any,
+      s3Service as any,
+    );
+
+    await service.findAll('member-1', 'ENG-1');
+
+    expect(em.find).toHaveBeenCalledWith(FileAttachment, {
+      workspaceId: 'ws-1',
+      status: 'completed',
+      issueIdentifier: 'ENG-1',
+      teamId: 'team-1',
+      commentId: null,
+    });
+  });
+
   it('rejects a project outside the member accessible teams', async () => {
     s3Service.isConfigured.mockReturnValue(true);
     workspacesService.getAccessibleTeamIds.mockResolvedValue(['team-a']);

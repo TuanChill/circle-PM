@@ -125,7 +125,7 @@ export async function restoreIssue(identifier: string): Promise<Issue> {
 
 export async function addIssueComment(
    identifier: string,
-   data: { textContent?: string; commentBlocks?: ContentBlock[] }
+   data: { textContent?: string; commentBlocks?: ContentBlock[]; attachmentIds?: string[] }
 ): Promise<IssueDetail> {
    return apiClient<IssueDetail>(`/issues/${identifier}/comments`, {
       method: 'POST',
@@ -134,27 +134,27 @@ export async function addIssueComment(
 }
 
 export async function addIssueReaction(
-   activityId: string,
+   commentId: string,
    emoji: string,
    userId?: string
 ): Promise<{ id: string; reactions: Array<{ emoji: string; count: number; userIds: string[] }> }> {
    return apiClient<{
       id: string;
       reactions: Array<{ emoji: string; count: number; userIds: string[] }>;
-   }>(`/issues/activities/${activityId}/reactions`, {
+   }>(`/issues/comments/${commentId}/reactions`, {
       method: 'POST',
       body: JSON.stringify({ emoji, userId }),
    });
 }
 
 export async function removeIssueReaction(
-   activityId: string,
+   commentId: string,
    emoji: string
 ): Promise<{ id: string; reactions: Array<{ emoji: string; count: number; userIds: string[] }> }> {
    return apiClient<{
       id: string;
       reactions: Array<{ emoji: string; count: number; userIds: string[] }>;
-   }>(`/issues/activities/${activityId}/reactions/${encodeURIComponent(emoji)}`, {
+   }>(`/issues/comments/${commentId}/reactions/${encodeURIComponent(emoji)}`, {
       method: 'DELETE',
    });
 }

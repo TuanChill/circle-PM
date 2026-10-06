@@ -4,6 +4,7 @@ import { v7 } from 'uuid';
 @Entity({ tableName: 'file_attachments' })
 @Index({ properties: ['workspaceId', 'issueIdentifier'] })
 @Index({ properties: ['workspaceId', 'projectId'] })
+@Index({ properties: ['commentId'] })
 export class FileAttachment {
   @PrimaryKey({ type: 'uuid' })
   id: string = v7();
@@ -16,6 +17,9 @@ export class FileAttachment {
 
   @Property({ type: 'string', nullable: true })
   issueIdentifier?: string;
+
+  @Property({ type: 'uuid', nullable: true })
+  commentId?: string;
 
   @Property({ type: 'string', nullable: true })
   projectId?: string;

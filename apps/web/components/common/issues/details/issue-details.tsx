@@ -658,6 +658,7 @@ export default function IssueDetails() {
 
                <ActivityFeed
                   activity={detail.activity}
+                  comments={detail.comments ?? []}
                   issueIdentifier={issue.identifier}
                   members={members}
                   isSubscribed={Boolean(issue.isSubscribed)}

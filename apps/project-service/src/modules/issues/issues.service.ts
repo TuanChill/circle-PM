@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, LockMode } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { v7 } from 'uuid';
 import {
@@ -23,8 +23,10 @@ import { selectIssueNotificationRecipients } from './notification-recipients';
 import { isRelationInIssueTeam } from './relation-scope';
 import {
   Cycle,
+  FileAttachment,
   Issue,
   IssueActivity,
+  IssueComment,
   IssueLabel,
   IssueRelation,
   IssueSubscription,
@@ -978,7 +980,15 @@ export class IssuesService {
       { orderBy: { createdAt: 'ASC' } },
     );
 
-    const activityActorIds = activities.map((activity) => activity.actorId);
+    const comments = await this.em.find(
+      IssueComment,
+      { issueIdentifier: issue.identifier },
+      { orderBy: { createdAt: 'ASC' } },
+    );
+    const activityActorIds = [
+      ...activities.map((activity) => activity.actorId),
+      ...comments.map((comment) => comment.actorId),
+    ];
     const workspaceMemberships = team?.workspaceId
       ? await this.em.find(WorkspaceMember, {
           workspaceId: team.workspaceId,
@@ -1064,32 +1074,52 @@ export class IssuesService {
     const activityFeed = activities.map((act) => {
       const actor = membersMap.get(act.actorId) ?? null;
       const timeAgo = formatTimeAgo(act.createdAt);
-
-      if (act.kind === 'comment') {
-        let body = act.commentBlocks;
-        if (
-          !Array.isArray(body) ||
-          body.length === 0 ||
-          body.every((b) => !b || typeof b !== 'object' || !('type' in b))
-        ) {
-          body = [{ type: 'paragraph', text: act.text || '' }];
-        }
-        return {
-          kind: 'comment' as const,
-          id: act.id,
-          actor,
-          timeAgo,
-          body,
-          reactions: act.reactions || [],
-        };
-      }
       return {
-        kind: 'event' as const,
         id: act.id,
         actor,
         event: act.event || 'status',
         text: act.text || '',
         timeAgo,
+        createdAt: act.createdAt,
+      };
+    });
+
+    const commentIds = comments.map((comment) => comment.id);
+    const commentAttachments = commentIds.length
+      ? await this.em.find(FileAttachment, {
+          commentId: { $in: commentIds },
+          status: 'completed',
+        })
+      : [];
+    const attachmentsByComment = new Map<string, FileAttachment[]>();
+    for (const attachment of commentAttachments) {
+      const list = attachmentsByComment.get(attachment.commentId!) ?? [];
+      list.push(attachment);
+      attachmentsByComment.set(attachment.commentId!, list);
+    }
+    const commentItems = comments.map((comment) => {
+      let body = comment.commentBlocks;
+      if (
+        !Array.isArray(body) ||
+        body.length === 0 ||
+        body.every((block) => !block || typeof block !== 'object' || !('type' in block))
+      ) {
+        body = [{ type: 'paragraph', text: comment.text || '' }];
+      }
+      return {
+        id: comment.id,
+        actor: membersMap.get(comment.actorId) ?? null,
+        timeAgo: formatTimeAgo(comment.createdAt),
+        createdAt: comment.createdAt,
+        body,
+        reactions: comment.reactions || [],
+        attachments: (attachmentsByComment.get(comment.id) ?? []).map((attachment) => ({
+          id: attachment.id,
+          fileName: attachment.fileName,
+          contentType: attachment.contentType,
+          fileSize: attachment.fileSize,
+          createdAt: attachment.createdAt,
+        })),
       };
     });
 
@@ -1099,6 +1129,7 @@ export class IssuesService {
       identifier: issue.identifier,
       description: descriptionBlocks,
       activity: activityFeed,
+      comments: commentItems,
       subIssueIds: base.subissues,
       relatedIds: relatedIds.length > 0 ? relatedIds : undefined,
       blockedByIds: blockedByIds.length > 0 ? blockedByIds : undefined,
@@ -1275,7 +1306,6 @@ export class IssuesService {
     const activity = new IssueActivity({
       issueIdentifier: identifier,
       actorId,
-      kind: 'event',
       event: 'created',
       text: 'created this issue',
     });
@@ -1409,7 +1439,6 @@ export class IssuesService {
         new IssueActivity({
           issueIdentifier: issue.identifier,
           actorId,
-          kind: 'event',
           event: 'title',
           text: 'changed the title',
         }),
@@ -1426,7 +1455,6 @@ export class IssuesService {
         new IssueActivity({
           issueIdentifier: issue.identifier,
           actorId,
-          kind: 'event',
           event: 'description',
           text: 'updated the description',
         }),
@@ -1447,7 +1475,6 @@ export class IssuesService {
         const act = new IssueActivity({
           issueIdentifier: issue.identifier,
           actorId,
-          kind: 'event',
           event: 'status',
           text: `changed status to ${statusName}`,
         });
@@ -1471,7 +1498,6 @@ export class IssuesService {
         const act = new IssueActivity({
           issueIdentifier: issue.identifier,
           actorId,
-          kind: 'event',
           event: 'priority',
           text: `set priority to ${ALL_PRIORITIES[dto.priorityId]?.name || dto.priorityId}`,
         });
@@ -1494,7 +1520,6 @@ export class IssuesService {
           new IssueActivity({
             issueIdentifier: issue.identifier,
             actorId,
-            kind: 'event',
             event: 'estimate',
             text:
               dto.estimate === null
@@ -1510,7 +1535,6 @@ export class IssuesService {
       const act = new IssueActivity({
         issueIdentifier: issue.identifier,
         actorId,
-        kind: 'event',
         event: 'assignment',
         text: dto.assigneeId ? `assigned to ${dto.assigneeId}` : 'unassigned',
       });
@@ -1683,15 +1707,48 @@ export class IssuesService {
         ? dto.commentBlocks
         : [{ type: 'paragraph', text: textContent }];
 
-    const comment = new IssueActivity({
-      issueIdentifier: issue.identifier,
-      actorId,
-      kind: 'comment',
-      text: textContent,
-      commentBlocks: commentBlocks,
-    });
+    const attachmentIds = [...new Set(dto.attachmentIds ?? [])];
+    if (attachmentIds.length > 0 && !textContent.trim()) {
+      throw new BadRequestException('A comment is required when attaching files');
+    }
+    const team = await this.em.findOne(Team, { id: issue.teamId });
+    if (attachmentIds.length > 0 && !team?.workspaceId) {
+      throw new BadRequestException('Comment attachments are unavailable for this issue');
+    }
+    await this.em.transactional(async (transactionalEm) => {
+      const attachments = attachmentIds.length
+        ? await transactionalEm.find(
+            FileAttachment,
+            { id: { $in: attachmentIds } },
+            { lockMode: LockMode.PESSIMISTIC_WRITE },
+          )
+        : [];
+      if (
+        attachments.length !== attachmentIds.length ||
+        attachments.some(
+          (attachment) =>
+            attachment.status !== 'completed' ||
+            attachment.issueIdentifier !== issue.identifier ||
+            attachment.projectId != null ||
+            attachment.teamId !== issue.teamId ||
+            attachment.workspaceId !== team?.workspaceId ||
+            attachment.uploaderId !== actorId ||
+            attachment.commentId != null,
+        )
+      ) {
+        throw new BadRequestException('One or more comment attachments are unavailable');
+      }
 
-    this.em.persist(comment);
+      const comment = new IssueComment({
+        issueIdentifier: issue.identifier,
+        actorId,
+        text: textContent,
+        commentBlocks,
+      });
+      transactionalEm.persist(comment);
+      for (const attachment of attachments) attachment.commentId = comment.id;
+      await transactionalEm.flush();
+    });
 
     // @mention parsing: `@<memberId>` resolved against real members. A mention takes
     // priority over the generic 'comment' notification for that same recipient (no dupes).
@@ -1737,15 +1794,15 @@ export class IssuesService {
   }
 
   async addReaction(activityId: string, dto: AddReactionDto, memberId: string) {
-    const act = await this.em.findOne(IssueActivity, { id: activityId });
-    if (!act) throw new NotFoundException(`Activity ${activityId} not found`);
+    const act = await this.em.findOne(IssueComment, { id: activityId });
+    if (!act) throw new NotFoundException(`Comment ${activityId} not found`);
 
     const issue = await this.em.findOne(Issue, { identifier: act.issueIdentifier });
-    if (!issue) throw new NotFoundException(`Activity ${activityId} not found`);
+    if (!issue) throw new NotFoundException(`Comment ${activityId} not found`);
     await this.assertTeamAccess(
       memberId,
       issue.teamId,
-      `Activity ${activityId} not found`,
+      `Comment ${activityId} not found`,
     );
 
     const reactions = act.reactions || [];
@@ -1769,15 +1826,15 @@ export class IssuesService {
   }
 
   async removeReaction(activityId: string, emoji: string, memberId: string) {
-    const act = await this.em.findOne(IssueActivity, { id: activityId });
-    if (!act) throw new NotFoundException(`Activity ${activityId} not found`);
+    const act = await this.em.findOne(IssueComment, { id: activityId });
+    if (!act) throw new NotFoundException(`Comment ${activityId} not found`);
 
     const issue = await this.em.findOne(Issue, { identifier: act.issueIdentifier });
-    if (!issue) throw new NotFoundException(`Activity ${activityId} not found`);
+    if (!issue) throw new NotFoundException(`Comment ${activityId} not found`);
     await this.assertTeamAccess(
       memberId,
       issue.teamId,
-      `Activity ${activityId} not found`,
+      `Comment ${activityId} not found`,
     );
 
     const reactions = Array.isArray(act.reactions) ? act.reactions : [];

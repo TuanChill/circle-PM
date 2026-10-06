@@ -8,6 +8,7 @@ import { InitiativeActivity } from './initiative/initiative-activity.entity';
 import { InitiativeUpdate } from './initiative/initiative-update.entity';
 import { Initiative } from './initiative/initiative.entity';
 import { IssueActivity } from './issue/issue-activity.entity';
+import { IssueComment } from './issue/issue-comment.entity';
 import { IssueRelation, PrLink } from './issue/issue-relation.entity';
 import { IssueSubscription } from './issue/issue-subscription.entity';
 import { IssueTemplate } from './issue/issue-template.entity';
@@ -75,6 +76,7 @@ export const ALL_ENTITIES = [
   IssueSubscription,
   IssueTemplate,
   IssueActivity,
+  IssueComment,
   IssueRelation,
   PrLink,
   Initiative,

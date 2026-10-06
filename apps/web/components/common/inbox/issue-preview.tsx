@@ -172,6 +172,7 @@ export default function IssuePreview({ notification, onMarkAsRead }: IssuePrevie
                   ) : (
                      <ActivityFeed
                         activity={detail?.activity ?? []}
+                        comments={detail?.comments ?? []}
                         issueIdentifier={displayIssue.identifier}
                         members={members}
                      />

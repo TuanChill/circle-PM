@@ -12,20 +12,11 @@ export class IssueActivity {
   @Property({ type: 'string' })
   actorId: string;
 
-  @Property({ type: 'string' })
-  kind: 'event' | 'comment';
-
   @Property({ type: 'string', nullable: true })
   event?: string; // 'created' | 'status' | 'label' | 'priority' | 'cycle' | 'blocked' | etc.
 
   @Property({ type: 'text', nullable: true })
   text?: string;
-
-  @Property({ type: 'json', nullable: true })
-  commentBlocks?: any[]; // ContentBlock[]
-
-  @Property({ type: 'json', default: '[]' })
-  reactions: any[] = []; // { emoji: string, count: number, userIds?: string[] }[]
 
   @Property({ type: 'timestamp with time zone', onCreate: () => new Date() })
   createdAt: Date = new Date();

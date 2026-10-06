@@ -56,7 +56,8 @@ export interface PrLink {
 export interface IssueDetail {
    identifier: string;
    description: ContentBlock[];
-   activity: ActivityItem[];
+   activity: IssueActivityEvent[];
+   comments: IssueComment[];
    subIssueIds?: string[];
    relatedIds?: string[];
    blockedByIds?: string[];
@@ -69,11 +70,40 @@ export interface IssueDetail {
    milestone?: string;
 }
 
+export interface IssueActivityEvent {
+   id: string;
+   actor: User;
+   event: string;
+   text: string;
+   timeAgo: string;
+   createdAt?: string;
+}
+
+export interface IssueComment {
+   id: string;
+   actor: User;
+   timeAgo: string;
+   createdAt?: string;
+   body: ContentBlock[];
+   reactions?: CommentReaction[];
+   attachments?: Array<{
+      id: string;
+      fileName: string;
+      contentType: string;
+      fileSize: number;
+      createdAt: string;
+   }>;
+}
+
+type LegacyIssueDetail = Omit<IssueDetail, 'activity' | 'comments'> & {
+   activity: ActivityItem[];
+};
+
 /* -------------------------------------------------------------------------- */
 /*                        Handcrafted issue details                           */
 /* -------------------------------------------------------------------------- */
 
-const details: IssueDetail[] = [
+const details: LegacyIssueDetail[] = [
    {
       identifier: 'LNUI-703',
       description: [
@@ -819,7 +849,7 @@ const hashString = (value: string): number => {
  * Builds a plausible detail for issues without a handcrafted one.
  * Deterministic (seeded by the identifier) so SSR and client match.
  */
-const buildFallbackDetail = (issue: Issue): IssueDetail => {
+const buildFallbackDetail = (issue: Issue): LegacyIssueDetail => {
    const seed = hashString(issue.identifier);
    const author = issue.assignee ?? users[seed % users.length];
    const reporter = users[(seed + 7) % users.length];
@@ -945,5 +975,16 @@ const buildFallbackDetail = (issue: Issue): IssueDetail => {
 const detailByIdentifier = new Map(details.map((detail) => [detail.identifier, detail]));
 
 export function getIssueDetail(issue: Issue): IssueDetail {
-   return detailByIdentifier.get(issue.identifier) ?? buildFallbackDetail(issue);
+   const detail = detailByIdentifier.get(issue.identifier) ?? buildFallbackDetail(issue);
+   return {
+      ...detail,
+      activity: detail.activity.flatMap((item) => {
+         if (item.kind !== 'event') return [];
+         const { kind: _kind, ...event } = item;
+         return [event];
+      }),
+      comments: detail.activity.flatMap((item) =>
+         item.kind === 'comment' ? [{ ...item, attachments: [] }] : []
+      ),
+   };
 }

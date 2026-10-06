@@ -186,7 +186,27 @@ export class IssuesController {
     return this.issuesService.addComment(identifier, dto, actorId);
   }
 
-  @ApiOperation({ summary: 'Add reaction to issue activity/comment' })
+  @ApiOperation({ summary: 'Add reaction to an issue comment' })
+  @Post('comments/:commentId/reactions')
+  addCommentReaction(
+    @Param('commentId') commentId: string,
+    @Body() dto: AddReactionDto,
+    @User('id') memberId: string,
+  ) {
+    return this.issuesService.addReaction(commentId, dto, memberId);
+  }
+
+  @ApiOperation({ summary: 'Remove the authenticated member reaction from a comment' })
+  @Delete('comments/:commentId/reactions/:emoji')
+  removeCommentReaction(
+    @Param('commentId') commentId: string,
+    @Param('emoji') emoji: string,
+    @User('id') memberId: string,
+  ) {
+    return this.issuesService.removeReaction(commentId, emoji, memberId);
+  }
+
+  @ApiOperation({ summary: 'Compatibility alias for adding comment reactions' })
   @Post('activities/:activityId/reactions')
   addReaction(
     @Param('activityId') activityId: string,
@@ -196,7 +216,7 @@ export class IssuesController {
     return this.issuesService.addReaction(activityId, dto, memberId);
   }
 
-  @ApiOperation({ summary: 'Remove the authenticated member reaction' })
+  @ApiOperation({ summary: 'Compatibility alias for removing comment reactions' })
   @Delete('activities/:activityId/reactions/:emoji')
   removeReaction(
     @Param('activityId') activityId: string,

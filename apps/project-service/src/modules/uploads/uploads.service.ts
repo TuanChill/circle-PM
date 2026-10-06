@@ -230,6 +230,7 @@ export class UploadsService {
     if (target.issueIdentifier) {
       where.issueIdentifier = target.issueIdentifier;
       where.teamId = target.teamId;
+      where.commentId = null;
     }
     if (target.projectId) where.projectId = target.projectId;
 

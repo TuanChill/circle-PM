@@ -181,12 +181,20 @@ export function useAddIssueComment() {
          actorId,
          textContent,
          commentBlocks,
+         attachmentIds,
       }: {
          identifier: string;
          actorId: string;
          textContent?: string;
          commentBlocks?: ContentBlock[];
-      }) => issuesService.addComment(identifier, { actorId, textContent, commentBlocks }),
+         attachmentIds?: string[];
+      }) =>
+         issuesService.addComment(identifier, {
+            actorId,
+            textContent,
+            commentBlocks,
+            attachmentIds,
+         }),
       onSuccess: (updatedDetail, { identifier }) => {
          queryClient.setQueryData(issueKeys.activity(identifier), updatedDetail);
          queryClient.invalidateQueries({ queryKey: issueKeys.activity(identifier) });
