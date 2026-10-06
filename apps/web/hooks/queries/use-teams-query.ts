@@ -64,9 +64,11 @@ export function useToggleJoinTeam() {
 
    return useMutation({
       mutationFn: (id: string) => teamsService.toggleJoinTeam(id),
-      onSuccess: (updated) => {
-         queryClient.invalidateQueries({ queryKey: teamKeys.lists() });
-         queryClient.invalidateQueries({ queryKey: teamKeys.detail(updated.id) });
+      onSuccess: async (updated) => {
+         await Promise.all([
+            queryClient.invalidateQueries({ queryKey: teamKeys.lists() }),
+            queryClient.invalidateQueries({ queryKey: teamKeys.detail(updated.id) }),
+         ]);
       },
    });
 }

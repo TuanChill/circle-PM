@@ -15,6 +15,7 @@ import { useAddTeamMember, useTeam } from '@/hooks/queries/use-teams-query';
 import { useMembers } from '@/hooks/queries/use-members-query';
 import QueryErrorState from '@/components/common/query-error-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/store/auth-store';
 import { Plus, SlidersHorizontal } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
@@ -27,6 +28,7 @@ export default function TeamMembers() {
    const { teamId } = useParams<{ orgId: string; teamId: string }>();
    const { data: team, isLoading, isError, error, refetch } = useTeam(teamId);
    const { data: allMembers = [] } = useMembers();
+   const currentUserId = useAuthStore((state) => state.user?.id);
    const addTeamMemberMutation = useAddTeamMember();
    const [addOpen, setAddOpen] = useState(false);
 
@@ -49,7 +51,9 @@ export default function TeamMembers() {
 
    const members = [...team.members].sort((a, b) => a.name.localeCompare(b.name));
    const memberIds = new Set(members.map((m) => m.id));
-   const addableMembers = allMembers.filter((m) => !memberIds.has(m.id));
+   const addableMembers = allMembers.filter(
+      (member) => member.id !== currentUserId && !memberIds.has(member.id)
+   );
 
    const handleAddMember = (memberId: string) => {
       addTeamMemberMutation.mutate({ teamId, memberId });
@@ -74,7 +78,7 @@ export default function TeamMembers() {
                         <CommandList>
                            <CommandEmpty>
                               {addableMembers.length === 0
-                                 ? 'All members are already on this team.'
+                                 ? 'All other members are already on this team.'
                                  : 'No members found.'}
                            </CommandEmpty>
                            <CommandGroup>

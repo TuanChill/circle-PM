@@ -199,6 +199,15 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
       }
    };
 
+   const handleJoinTeam = async () => {
+      try {
+         await toggleJoin(team.id);
+         toast.success(`You joined team "${team.name}"`);
+      } catch (err: unknown) {
+         toast.error(err instanceof Error ? err.message : 'Could not join team');
+      }
+   };
+
    const handleSaveEstimates = async () => {
       try {
          await updateTeam(team.id, {
@@ -395,17 +404,44 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
                   </SettingsCard>
                </SettingsSection>
 
+               <SettingsSection title="Membership">
+                  <SettingsCard>
+                     {team.joined ? (
+                        <SettingsRow
+                           title="Leave team"
+                           description="Remove yourself as a member of this team"
+                           trailing={
+                              <Button
+                                 size="xs"
+                                 variant="ghost"
+                                 disabled={toggleJoinMutation.isPending}
+                                 onClick={() => setLeaveOpen(true)}
+                              >
+                                 Leave team...
+                              </Button>
+                           }
+                        />
+                     ) : (
+                        <SettingsRow
+                           title="Join team"
+                           description="Join this team to receive team-level updates and work with its issues"
+                           trailing={
+                              <Button
+                                 size="xs"
+                                 variant="secondary"
+                                 disabled={toggleJoinMutation.isPending}
+                                 onClick={handleJoinTeam}
+                              >
+                                 {toggleJoinMutation.isPending ? 'Joining...' : 'Join team'}
+                              </Button>
+                           }
+                        />
+                     )}
+                  </SettingsCard>
+               </SettingsSection>
+
                <SettingsSection title="Danger zone">
                   <SettingsCard>
-                     <SettingsRow
-                        title="Leave team"
-                        description="Remove yourself as a member of this team"
-                        trailing={
-                           <Button size="xs" variant="ghost" onClick={() => setLeaveOpen(true)}>
-                              Leave team...
-                           </Button>
-                        }
-                     />
                      <SettingsRow
                         title="Retire team"
                         description="Prevent creating and updating issues in this team while preserving all historical data"
@@ -635,7 +671,12 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
                </AlertDialogHeader>
                <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleLeaveTeam}>Leave team</AlertDialogAction>
+                  <AlertDialogAction
+                     disabled={toggleJoinMutation.isPending}
+                     onClick={handleLeaveTeam}
+                  >
+                     {toggleJoinMutation.isPending ? 'Leaving...' : 'Leave team'}
+                  </AlertDialogAction>
                </AlertDialogFooter>
             </AlertDialogContent>
          </AlertDialog>
