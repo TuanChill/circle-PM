@@ -334,20 +334,20 @@ input[type='search'] {
 }
 
 /* Linear-style Task List (Checklist) */
-.linear-tiptap-editor .ProseMirror ul[data-type='taskList'] {
+.linear-tiptap-editor .ProseMirror ul.taskList {
    list-style: none;
    padding: 0;
    margin: 0.5rem 0;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] {
+.linear-tiptap-editor .ProseMirror li.taskItem {
    display: flex;
    align-items: flex-start;
    gap: 0.5rem;
    margin: 0.25rem 0;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > label {
+.linear-tiptap-editor .ProseMirror li.taskItem > label {
    display: inline-flex;
    align-items: center;
    justify-content: center;
@@ -356,7 +356,7 @@ input[type='search'] {
    flex-shrink: 0;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > label input[type='checkbox'] {
+.linear-tiptap-editor .ProseMirror li.taskItem > label input[type='checkbox'] {
    appearance: none;
    -webkit-appearance: none;
    width: 15px;
@@ -370,16 +370,16 @@ input[type='search'] {
    transition: all 120ms ease-in-out;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > label input[type='checkbox']:hover {
+.linear-tiptap-editor .ProseMirror li.taskItem > label input[type='checkbox']:hover {
    border-color: var(--muted-foreground);
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > label input[type='checkbox']:checked {
+.linear-tiptap-editor .ProseMirror li.taskItem > label input[type='checkbox']:checked {
    background-color: #6366f1;
    border-color: #6366f1;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > label input[type='checkbox']:checked::before {
+.linear-tiptap-editor .ProseMirror li.taskItem > label input[type='checkbox']:checked::before {
    content: '';
    width: 8px;
    height: 5px;
@@ -388,12 +388,12 @@ input[type='search'] {
    transform: rotate(-45deg) translate(1px, -1px);
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'] > div {
+.linear-tiptap-editor .ProseMirror li.taskItem > div {
    flex: 1 1 auto;
    min-width: 0;
 }
 
-.linear-tiptap-editor .ProseMirror li[data-type='taskItem'][data-checked='true'] > div {
+.linear-tiptap-editor .ProseMirror li.taskItem[data-checked='true'] > div {
    text-decoration: line-through;
    color: var(--muted-foreground);
 }
