@@ -242,6 +242,7 @@ export function ContentBlocks({
                               </span>
                               <span
                                  className={cn(
+                                    'min-w-0 flex-1',
                                     item.checked && 'line-through text-muted-foreground'
                                  )}
                               >
