@@ -1,7 +1,11 @@
 'use client';
 
 import type { Issue } from '@/mock-data/issues';
-import { getStatusesByCategory, StatusCategory, displayOrderedStatus } from '@/lib/workflow-status';
+import {
+   getStatusesByCategory,
+   StatusCategory,
+   workflowOrderedStatus,
+} from '@/lib/workflow-status';
 import { useFilterStore } from '@/store/filter-store';
 import { applyIssueFilters } from './issue-filter-columns';
 import { IssueFilterBar } from './issue-filter-bar';
@@ -71,7 +75,7 @@ export default function AllIssues({ categories }: AllIssuesProps) {
    const isViewTypeGrid = viewType === 'grid';
 
    const statuses = useMemo(
-      () => (categories ? getStatusesByCategory(categories) : displayOrderedStatus),
+      () => (categories ? getStatusesByCategory(categories) : workflowOrderedStatus),
       [categories]
    );
 

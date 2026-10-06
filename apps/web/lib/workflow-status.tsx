@@ -235,7 +235,7 @@ export const projectStatus: Status[] = status.filter((s) =>
 );
 
 export function getStatusesByCategory(categories: StatusCategory[]): Status[] {
-   return displayOrderedStatus.filter((s) => categories.includes(s.category));
+   return workflowOrderedStatus.filter((s) => categories.includes(s.category));
 }
 
 export const StatusIcon: React.FC<{ statusId: string }> = ({ statusId }) => {

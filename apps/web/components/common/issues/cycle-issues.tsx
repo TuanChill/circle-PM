@@ -2,7 +2,7 @@
 
 import { CycleDetailsPanel } from '@/components/common/cycles/cycle-details-panel';
 import { useCycles } from '@/hooks/queries/use-cycles-query';
-import { displayOrderedStatus } from '@/lib/workflow-status';
+import { workflowOrderedStatus } from '@/lib/workflow-status';
 import { useFilterStore } from '@/store/filter-store';
 import { applyIssueFilters } from './issue-filter-columns';
 import { IssueFilterBar } from './issue-filter-bar';
@@ -105,7 +105,7 @@ export default function CycleIssues({ cycleView }: CycleIssuesProps) {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={cycleIssues}
-                  statuses={displayOrderedStatus}
+                  statuses={workflowOrderedStatus}
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="No issues in this cycle"
                   emptyStateSubtitle="Plan and organize issues to deliver in this cycle."
