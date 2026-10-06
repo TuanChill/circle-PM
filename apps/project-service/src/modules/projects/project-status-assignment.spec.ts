@@ -102,6 +102,33 @@ describe('project status assignment', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('does not query the UUID status table with legacy project status IDs', async () => {
+    const em = { find: jest.fn() };
+    const service = new ProjectsService(em as never, {} as never);
+
+    await expect(
+      (service as any).findCustomStatuses(['workspace-a'], ['in-progress', 'done']),
+    ).resolves.toEqual([]);
+
+    expect(em.find).not.toHaveBeenCalled();
+  });
+
+  it('queries custom status metadata only for valid UUID IDs', async () => {
+    const customStatusId = '2f3c98ec-35dd-4b51-9db3-455772a24ea0';
+    const em = { find: jest.fn().mockResolvedValue([]) };
+    const service = new ProjectsService(em as never, {} as never);
+
+    await (service as any).findCustomStatuses(
+      ['workspace-a'],
+      ['in-progress', 'invalid-status-id', customStatusId],
+    );
+
+    expect(em.find).toHaveBeenCalledWith(ProjectStatus, {
+      workspaceId: { $in: ['workspace-a'] },
+      id: { $in: [customStatusId] },
+    });
+  });
+
   it('serializes custom status name, color, and category in project responses', () => {
     const service = new ProjectsService({} as never, {} as never);
     const status = new ProjectStatus({

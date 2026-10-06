@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v7 } from 'uuid';
+import { v7, validate } from 'uuid';
 import {
   CreateMilestoneDto,
   CreateProjectDto,
@@ -133,6 +133,20 @@ export class ProjectsService {
       color: customStatus.color,
       category: customStatus.category,
     };
+  }
+
+  private async findCustomStatuses(workspaceIds: string[], statusIds: string[]) {
+    const customStatusIds = [
+      ...new Set(
+        statusIds.filter((statusId) => !STATUS_DATA[statusId] && validate(statusId)),
+      ),
+    ];
+    if (workspaceIds.length === 0 || customStatusIds.length === 0) return [];
+
+    return this.em.find(ProjectStatus, {
+      workspaceId: { $in: workspaceIds },
+      id: { $in: customStatusIds },
+    });
   }
 
   private async getAccessibleTeamIds(memberId: string, workspaceId?: string) {
@@ -549,10 +563,10 @@ export class ProjectsService {
     const subscribedProjectIds = new Set(
       subscriptions.map((subscription) => subscription.projectId),
     );
-    const customStatuses = await this.em.find(ProjectStatus, {
-      workspaceId: { $in: workspaceIds },
-      id: { $in: [...new Set(visibleProjects.map((project) => project.statusId))] },
-    });
+    const customStatuses = await this.findCustomStatuses(
+      workspaceIds,
+      visibleProjects.map((project) => project.statusId),
+    );
     const customStatusesById = new Map(
       customStatuses.map((status) => [status.id, status]),
     );
@@ -631,12 +645,10 @@ export class ProjectsService {
       ...(team?.workspaceId ? { workspaceId: team.workspaceId } : {}),
       $or: [{ teamId: null }, { teamId: { $in: projectTeamIds } }],
     });
-    const customStatuses = team.workspaceId
-      ? await this.em.find(ProjectStatus, {
-          workspaceId: team.workspaceId,
-          id: project.statusId,
-        })
-      : [];
+    const customStatuses = await this.findCustomStatuses(
+      team.workspaceId ? [team.workspaceId] : [],
+      [project.statusId],
+    );
 
     const membersMap = new Map(members.map((m) => [m.id, toSafeMember(m)]));
     const labelsMap = new Map(labels.map((l) => [l.id, l]));
