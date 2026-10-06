@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { SquareUser } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { usePresenceStore } from '@/store/presence-store';
 
 interface MemberLineProps {
    user: Member;
@@ -25,6 +26,7 @@ export default function MemberLine({ user }: MemberLineProps) {
    const { orgId } = useParams<{ orgId: string }>();
    const isApplication = user.role === 'Application';
    const teamIds = user.teamIds ?? [];
+   const liveStatus = usePresenceStore((state) => state.getStatus(user.id, user.status));
 
    return (
       <Link
@@ -81,10 +83,16 @@ export default function MemberLine({ user }: MemberLineProps) {
 
          {/* Last seen (Linear only shows currently-online members) */}
          <div className="hidden sm:flex w-[90px] shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-            {user.status === 'online' && !isApplication && (
+            {!isApplication && liveStatus === 'online' && (
                <>
                   <span className="size-1.5 rounded-full bg-[#00cc66]" />
                   Online
+               </>
+            )}
+            {!isApplication && liveStatus === 'away' && (
+               <>
+                  <span className="size-1.5 rounded-full bg-[#ffcc00]" />
+                  Away
                </>
             )}
          </div>

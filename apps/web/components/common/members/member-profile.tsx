@@ -18,6 +18,7 @@ import { useIssues } from '@/hooks/queries/use-issues-query';
 import { memberStatusColors } from '@/lib/member-status';
 import { displayOrderedStatus } from '@/lib/workflow-status';
 import { useFilterStore } from '@/store/filter-store';
+import { usePresenceStore } from '@/store/presence-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
 import { renderProjectIcon } from '@/lib/project-utils';
@@ -111,6 +112,7 @@ export default function MemberProfile({ member }: { member: Member }) {
    const { data: issues = [] } = issuesQuery;
    const [activeTab] = useQueryState('tab', parseAsString.withDefault('assigned'));
    const { localTime, joinedAgo } = useClientTimes(member);
+   const liveStatus = usePresenceStore((state) => state.getStatus(member.id, member.status));
    const { isSearchOpen, searchQuery } = useSearchStore();
    const { viewType } = useViewStore();
    const { filters } = useFilterStore();
@@ -272,7 +274,7 @@ export default function MemberProfile({ member }: { member: Member }) {
                               style={{
                                  backgroundColor:
                                     memberStatusColors[
-                                       member.status as keyof typeof memberStatusColors
+                                       liveStatus as keyof typeof memberStatusColors
                                     ] ?? memberStatusColors.offline,
                               }}
                            />
@@ -280,7 +282,7 @@ export default function MemberProfile({ member }: { member: Member }) {
                         <div className="min-w-0">
                            <h2 className="text-base font-semibold truncate">{member.name}</h2>
                            <p className="text-xs text-muted-foreground truncate">
-                              {member.name} · {presenceLabel[member.status]}
+                              {member.name} · {presenceLabel[liveStatus] ?? presenceLabel.offline}
                            </p>
                         </div>
                      </div>

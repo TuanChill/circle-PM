@@ -5,7 +5,7 @@ import {
   HttpLoggerMiddleware,
   validationSchema,
 } from '@app/common';
-import { AwsS3Module, BaseRepository } from '@app/core';
+import { AwsS3Module, BaseRepository, RedisModule } from '@app/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
@@ -24,6 +24,7 @@ import { IssuesModule } from './issues/issues.module';
 import { LabelsModule } from './labels/labels.module';
 import { MembersModule } from './members/members.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { PresenceModule } from './presence/presence.module';
 import { ProjectStatusesModule } from './project-statuses/project-statuses.module';
 import { ProjectTemplatesModule } from './project-templates/project-templates.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -64,6 +65,8 @@ import { appConfiguration, dbConfiguration } from '../config';
       inject: [appConfiguration.KEY, appCommonConfiguration.KEY],
     }),
     AuthModule,
+    RedisModule,
+    PresenceModule,
     OnboardingModule,
     WorkspacesModule,
     MembersModule,

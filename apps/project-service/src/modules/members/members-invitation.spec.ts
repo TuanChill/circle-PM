@@ -67,7 +67,12 @@ describe('MembersService invitations', () => {
       getAccessibleWorkspaceIds: jest.fn().mockResolvedValue([workspace.id]),
     };
     const mailer = { sendMemberInviteEmail: jest.fn().mockResolvedValue(true) };
-    const service = new MembersService(em, mailer as never, workspacesService as never);
+    const service = new MembersService(
+      em,
+      mailer as never,
+      workspacesService as never,
+      {} as never,
+    );
 
     const result = await service.create(
       {
@@ -111,6 +116,7 @@ describe('MembersService invitations', () => {
       em,
       { sendMemberInviteEmail: jest.fn() } as never,
       { getAccessibleWorkspaceIds: jest.fn() } as never,
+      {} as never,
     );
 
     await expect(

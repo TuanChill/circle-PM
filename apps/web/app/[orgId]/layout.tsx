@@ -8,6 +8,7 @@ import { useNotificationsStore } from '@/store/notifications-store';
 import { ROUTES } from '@/constants/routes';
 import { getActiveWorkspace, saveActiveWorkspace } from '@/lib/utils/workspace-persistence';
 import QueryErrorState from '@/components/common/query-error-state';
+import { PresenceProvider } from '@/components/providers/presence-provider';
 
 export default function WorkspaceOrgLayout({ children }: { children: React.ReactNode }) {
    const router = useRouter();
@@ -85,5 +86,5 @@ export default function WorkspaceOrgLayout({ children }: { children: React.React
       return null;
    }
 
-   return <>{children}</>;
+   return <PresenceProvider workspaceId={matchingWorkspace?.id}>{children}</PresenceProvider>;
 }

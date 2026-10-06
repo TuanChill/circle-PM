@@ -17,6 +17,7 @@ import {
 } from '../../data-access';
 import { canManageWorkspaceRole } from '../access-control';
 import { SesMailerService } from '../email/ses-mailer.service';
+import { PresenceService } from '../presence/presence.service';
 import { createInvitationToken } from '../workspaces/invitation-token';
 import { buildInvitationUrl } from '../workspaces/invitation-url';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -27,6 +28,7 @@ export class MembersService {
     private readonly em: EntityManager,
     private readonly sesMailerService: SesMailerService,
     private readonly workspacesService: WorkspacesService,
+    private readonly presenceService: PresenceService,
   ) {}
 
   private async resolveWorkspaceId(actorId: string, requestedWorkspaceId: string) {
@@ -92,9 +94,12 @@ export class MembersService {
     } else {
       members = await this.em.find(Member, {});
     }
-    const teamMembers = await this.em.find(TeamMember, {
-      teamId: { $in: [...visibleTeamIds] },
-    });
+    const [teamMembers, presenceMap] = await Promise.all([
+      this.em.find(TeamMember, {
+        teamId: { $in: [...visibleTeamIds] },
+      }),
+      this.presenceService.getUsersPresence(members.map((m) => m.id)),
+    ]);
 
     return members.map((member) => {
       const teamIds = teamMembers
@@ -105,7 +110,7 @@ export class MembersService {
         name: member.name,
         email: member.email,
         avatarUrl: member.avatarUrl,
-        status: member.status,
+        status: presenceMap[member.id] || 'offline',
         role: member.role,
         timezone: member.timezone,
         teamIds,
@@ -132,14 +137,17 @@ export class MembersService {
       throw new NotFoundException(`Member ${id} not found`);
     }
 
-    const visibleTeamIds = await this.getVisibleTeamIds(requesterId);
-    const teamMembers = await this.em.find(TeamMember, { memberId: id });
+    const [visibleTeamIds, teamMembers, presenceMap] = await Promise.all([
+      this.getVisibleTeamIds(requesterId),
+      this.em.find(TeamMember, { memberId: id }),
+      this.presenceService.getUsersPresence([member.id]),
+    ]);
     return {
       id: member.id,
       name: member.name,
       email: member.email,
       avatarUrl: member.avatarUrl,
-      status: member.status,
+      status: presenceMap[member.id] || 'offline',
       role: member.role,
       timezone: member.timezone,
       teamIds: filterVisibleTeamIds(teamMembers, visibleTeamIds),

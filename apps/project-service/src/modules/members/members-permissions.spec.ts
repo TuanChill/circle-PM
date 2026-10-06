@@ -24,6 +24,7 @@ describe('MembersService role permissions', () => {
       em,
       { sendMemberInviteEmail: jest.fn() } as never,
       { getAccessibleWorkspaceIds: jest.fn() } as never,
+      {} as never,
     );
     jest.spyOn(service, 'findOne').mockResolvedValue(member as never);
 
@@ -44,6 +45,7 @@ describe('MembersService role permissions', () => {
       em,
       { sendMemberInviteEmail: jest.fn() } as never,
       { getAccessibleWorkspaceIds: jest.fn() } as never,
+      {} as never,
     );
     jest.spyOn(service, 'findOne').mockResolvedValue(member as never);
 
@@ -75,6 +77,7 @@ describe('MembersService role permissions', () => {
       {
         getAccessibleWorkspaceIds: jest.fn().mockResolvedValue(['workspace-1']),
       } as never,
+      {} as never,
     );
     jest.spyOn(service, 'findOne').mockResolvedValue(member as never);
 
