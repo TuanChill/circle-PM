@@ -27,6 +27,7 @@ import { useMembers } from '@/hooks/queries/use-members-query';
 import { useInitiatives } from '@/hooks/queries/use-initiatives-query';
 import { useLabels } from '@/hooks/queries/use-labels-query';
 import { useWorkspaces } from '@/hooks/queries/use-workspaces-query';
+import { useProjectStatuses } from '@/hooks/queries/use-project-statuses-query';
 import {
    useCreateProjectFromTemplate,
    useProjectTemplates,
@@ -53,7 +54,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { renderPriorityIcon } from '@/lib/priority-utils';
-import { projectStatus } from '@/lib/workflow-status';
+import { getProjectStatusOptions } from '@/lib/project-status';
 import { useParams } from 'next/navigation';
 import QueryErrorState from '@/components/common/query-error-state';
 
@@ -114,6 +115,8 @@ export function CreateProjectDialog({
    const resolvedWorkspaceId = workspaces.find(
       (workspace) => workspace.id === orgId || workspace.slug === orgId
    )?.id;
+   const projectStatusesQuery = useProjectStatuses(resolvedWorkspaceId);
+   const projectStatusOptions = getProjectStatusOptions(projectStatusesQuery.data ?? []);
    const teamsQuery = useTeams();
    const membersQuery = useMembers();
    const initiativesQuery = useInitiatives();
@@ -131,6 +134,7 @@ export function CreateProjectDialog({
       initiativesQuery,
       labelsQuery,
       templatesQuery,
+      projectStatusesQuery,
    ];
    const optionError = optionQueries.find((query) => query.isError)?.error;
 
@@ -220,10 +224,11 @@ export function CreateProjectDialog({
          return;
       }
 
-      const selectedStatus =
-         projectStatus.find((s) => s.id === statusId) ??
-         projectStatus.find((s) => s.id === 'in-progress') ??
-         projectStatus[0];
+      const selectedStatus = projectStatusOptions.find((status) => status.id === statusId);
+      if (!selectedStatus) {
+         toast.error('The selected project status is not available in this workspace');
+         return;
+      }
 
       setIsSubmitting(true);
       try {
@@ -505,7 +510,7 @@ export function CreateProjectDialog({
                               <SelectValue />
                            </SelectTrigger>
                            <SelectContent className="bg-popover border-border/60">
-                              {projectStatus.map((s) => (
+                              {projectStatusOptions.map((s) => (
                                  <SelectItem key={s.id} value={s.id} className="text-xs">
                                     {s.name}
                                  </SelectItem>

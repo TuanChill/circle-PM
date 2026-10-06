@@ -28,6 +28,11 @@ export const projectKeys = {
    members: (id: string) => [...projectKeys.detail(id), 'members'] as const,
 };
 
+export const projectStatusKeys = {
+   all: ['project-statuses'] as const,
+   list: (workspaceId?: string) => [...projectStatusKeys.all, { workspaceId }] as const,
+};
+
 export const projectTemplateKeys = {
    all: ['project-templates'] as const,
    lists: () => [...projectTemplateKeys.all, 'list'] as const,

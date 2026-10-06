@@ -10,12 +10,14 @@ import {
    CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { projectStatus as allStatus, Status } from '@/lib/workflow-status';
+import type { ProjectStatusView } from '@/lib/project-status';
+import { getProjectStatusOptions, renderProjectStatusIcon } from '@/lib/project-status';
+import { useProjectStatuses } from '@/hooks/queries/use-project-statuses-query';
 import { CheckIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 
 interface StatusWithPercentProps {
-   status: Status;
+   status: ProjectStatusView;
    percentComplete: number;
    onStatusChange?: (statusId: string) => void;
 }
@@ -28,6 +30,9 @@ export function StatusWithPercent({
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string>(status.id);
+   const { data: customStatuses = [], isLoading } = useProjectStatuses();
+   const allStatus = getProjectStatusOptions(customStatuses);
+   const selectedItem = allStatus.find((item) => item.id === value) ?? status;
 
    useEffect(() => {
       setValue(status.id);
@@ -52,15 +57,9 @@ export function StatusWithPercent({
                variant="ghost"
                role="combobox"
                aria-expanded={open}
+               disabled={isLoading}
             >
-               {(() => {
-                  const selectedItem = allStatus.find((item) => item.id === value);
-                  if (selectedItem) {
-                     const Icon = selectedItem.icon;
-                     return <Icon />;
-                  }
-                  return null;
-               })()}
+               {renderProjectStatusIcon(selectedItem)}
                <span className="text-xs font-medium mt-[1px]">{percentComplete}%</span>
             </Button>
          </PopoverTrigger>
@@ -71,7 +70,6 @@ export function StatusWithPercent({
                   <CommandEmpty>No status found.</CommandEmpty>
                   <CommandGroup>
                      {allStatus.map((item) => {
-                        const Icon = item.icon;
                         return (
                            <CommandItem
                               key={item.id}
@@ -80,7 +78,7 @@ export function StatusWithPercent({
                               className="flex items-center justify-between"
                            >
                               <div className="flex items-center gap-2">
-                                 <Icon />
+                                 {renderProjectStatusIcon(item)}
                                  <span className="text-xs">{item.name}</span>
                               </div>
                               {value === item.id && <CheckIcon size={14} className="ml-auto" />}

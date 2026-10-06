@@ -32,4 +32,21 @@ describe('project property rules', () => {
       }),
     ).toBe('Project targetDate must be on or after startDate');
   });
+
+  it('accepts a resolved custom status while keeping the default allow-list strict', () => {
+    expect(
+      getProjectPropertyValidationError({
+        statusId: '2f3c98ec-35dd-4b51-9db3-455772a24ea0',
+        statusCategory: 'unstarted',
+        allowCustomStatus: true,
+      }),
+    ).toBeUndefined();
+    expect(
+      getProjectPropertyValidationError({
+        statusId: '2f3c98ec-35dd-4b51-9db3-455772a24ea0',
+        statusCategory: 'started',
+        allowCustomStatus: true,
+      }),
+    ).toBeUndefined();
+  });
 });

@@ -2,7 +2,7 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Project } from '@/mock-data/projects';
-import { renderStatusIcon } from '@/lib/status-utils';
+import { renderProjectStatusIcon } from '@/lib/project-status';
 import { renderProjectIcon } from '@/lib/project-utils';
 import { Box } from 'lucide-react';
 
@@ -26,7 +26,7 @@ export function ProjectsTooltip({ projects }: ProjectsTooltipProps) {
                      <div key={index} className="flex items-center gap-1.5">
                         {renderProjectIcon(project.icon, 'size-4 shrink-0')}
                         <span className="text-sm w-full text-left">{project?.name}</span>
-                        <div className="shrink-0">{renderStatusIcon(project.status?.id)}</div>
+                        <div className="shrink-0">{renderProjectStatusIcon(project.status)}</div>
                      </div>
                   ))}
                </div>

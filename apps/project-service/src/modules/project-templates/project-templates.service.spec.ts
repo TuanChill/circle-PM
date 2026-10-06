@@ -280,6 +280,33 @@ describe('ProjectTemplatesService.instantiate', () => {
     expect(projectsService.findOne).toHaveBeenCalledWith('project-1', 'member-1');
   });
 
+  it('passes a saved custom project status through the workspace template flow', async () => {
+    const { service, projectsService } = buildService(
+      { create: jest.fn() },
+      {
+        project: {
+          statusId: '2f3c98ec-35dd-4b51-9db3-455772a24ea0',
+          statusCategory: 'completed',
+        },
+        issues: [],
+      },
+    );
+
+    await service.instantiate(
+      'template-1',
+      { name: 'Launch copy', teamId: 'team-1' },
+      'member-1',
+    );
+
+    expect(projectsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusId: '2f3c98ec-35dd-4b51-9db3-455772a24ea0',
+        statusCategory: 'completed',
+      }),
+      'member-1',
+    );
+  });
+
   it('remaps cloned issue milestones to the new milestone name', async () => {
     const issuesService = { create: jest.fn().mockResolvedValue({ id: 'issue-1' }) };
     const { service, projectsService } = buildService(issuesService, {

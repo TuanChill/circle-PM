@@ -24,6 +24,7 @@ A high-performance, monorepo microservices platform built with NestJS, optimized
   * [⚙️ Microservices](#-microservices)
   * [🧰 Tools & Management UI](#-tools--management-ui)
 * [🗄️ Production database access](#-production-database-access)
+* [📊 Workspace project statuses](./docs/project-statuses.md)
 * [🔐 Demo API — Sign-Up & Login (cURL)](#-demo-api--sign-up--login-curl)
   * [Sign-Up](#sign-up)
   * [Login](#login)
@@ -335,6 +336,10 @@ docker compose run --rm kong-deck gateway sync /app/kong-dev.yaml
 ## 🗄️ Production database access
 
 Connect to the production PostgreSQL database through an SSH tunnel. The database port is bound to the server's loopback interface only. See [docs/database-access.md](./docs/database-access.md) for the SSH tunnel and database-client settings.
+
+## 📊 Workspace project statuses
+
+Workspace project-status behavior, API routes, and migration safety are documented in [docs/project-statuses.md](./docs/project-statuses.md).
 
 
 ---

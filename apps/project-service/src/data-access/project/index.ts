@@ -1,4 +1,5 @@
 export * from './project.entity';
+export * from './project-status.entity';
 export * from './project-activity.entity';
 export * from './project-milestone.entity';
 export * from './project-member.entity';

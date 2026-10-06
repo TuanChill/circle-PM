@@ -28,13 +28,18 @@ const STATUS_CATEGORY_BY_ID: Record<string, string> = {
 export function getProjectPropertyValidationError(input: {
   statusId?: string;
   statusCategory?: string;
+  allowCustomStatus?: boolean;
   priorityId?: string;
   healthId?: string;
   percentComplete?: number;
   startDate?: Date;
   targetDate?: Date;
 }) {
-  if (input.statusId !== undefined && !PROJECT_STATUS_IDS.has(input.statusId)) {
+  if (
+    input.statusId !== undefined &&
+    !PROJECT_STATUS_IDS.has(input.statusId) &&
+    !input.allowCustomStatus
+  ) {
     return `Unknown project status ${input.statusId}`;
   }
   if (
@@ -46,6 +51,7 @@ export function getProjectPropertyValidationError(input: {
   if (
     input.statusId !== undefined &&
     input.statusCategory !== undefined &&
+    STATUS_CATEGORY_BY_ID[input.statusId] !== undefined &&
     STATUS_CATEGORY_BY_ID[input.statusId] !== input.statusCategory
   ) {
     return `Project status ${input.statusId} does not belong to category ${input.statusCategory}`;

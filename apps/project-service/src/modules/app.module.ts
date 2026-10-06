@@ -24,6 +24,7 @@ import { IssuesModule } from './issues/issues.module';
 import { LabelsModule } from './labels/labels.module';
 import { MembersModule } from './members/members.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { ProjectStatusesModule } from './project-statuses/project-statuses.module';
 import { ProjectTemplatesModule } from './project-templates/project-templates.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -69,6 +70,7 @@ import { appConfiguration, dbConfiguration } from '../config';
     TeamsModule,
     LabelsModule,
     ProjectsModule,
+    ProjectStatusesModule,
     ProjectTemplatesModule,
     CyclesModule,
     IssuesModule,

@@ -9,7 +9,7 @@ import {
 } from '@/hooks/queries/use-projects-query';
 import { useTeams } from '@/hooks/queries/use-teams-query';
 import { useIssues } from '@/hooks/queries/use-issues-query';
-import { renderStatusIcon } from '@/lib/status-utils';
+import { renderProjectStatusIcon } from '@/lib/project-status';
 import { renderPriorityIcon } from '@/lib/priority-utils';
 import { renderProjectIcon } from '@/lib/project-utils';
 import { format, parseISO } from 'date-fns';
@@ -118,7 +118,7 @@ export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) 
             </div>
             <div className="flex flex-col">
                <PropertyRow label="Status">
-                  {renderStatusIcon(project.status?.id)}
+                  {renderProjectStatusIcon(project.status)}
                   <span>{project.status?.name}</span>
                </PropertyRow>
                <PropertyRow label="Priority">

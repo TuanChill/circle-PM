@@ -26,6 +26,7 @@ import {
   ProjectLabel,
   ProjectMember,
   ProjectMilestone,
+  ProjectStatus,
   ProjectSubscription,
   ProjectTeam,
   ProjectUpdate,
@@ -99,6 +100,40 @@ export class ProjectsService {
     private readonly em: EntityManager,
     private readonly workspacesService: WorkspacesService,
   ) {}
+
+  private async resolveProjectStatus(
+    statusId: string,
+    requestedCategory: string | undefined,
+    teamId: string,
+  ) {
+    const builtinStatus = STATUS_DATA[statusId];
+    if (builtinStatus) {
+      if (requestedCategory && requestedCategory !== builtinStatus.category) {
+        throw new BadRequestException(
+          `Project status ${statusId} does not belong to category ${requestedCategory}`,
+        );
+      }
+      return builtinStatus;
+    }
+
+    const team = await this.em.findOne(Team, { id: teamId });
+    if (!team?.workspaceId) {
+      throw new BadRequestException(`Unknown project status ${statusId}`);
+    }
+    const customStatus = await this.em.findOne(ProjectStatus, {
+      id: statusId,
+      workspaceId: team.workspaceId,
+    });
+    if (!customStatus) {
+      throw new BadRequestException(`Unknown project status ${statusId}`);
+    }
+    return {
+      id: customStatus.id,
+      name: customStatus.name,
+      color: customStatus.color,
+      category: customStatus.category,
+    };
+  }
 
   private async getAccessibleTeamIds(memberId: string, workspaceId?: string) {
     const accessibleTeamIds = await this.workspacesService.getAccessibleTeamIds(memberId);
@@ -292,6 +327,7 @@ export class ProjectsService {
     projectTeamIds: string[] = [],
     isSubscribed = false,
     projectWorkspaceId?: string,
+    customStatuses: Map<string, ProjectStatus> = new Map(),
   ) {
     const labelIds = projectLabels
       .filter((pl) => pl.projectId === project.id)
@@ -312,12 +348,20 @@ export class ProjectsService {
     // renderable so project lists never crash while displaying that project.
     const lead = project.leadId ? (membersMap.get(project.leadId) ?? null) : null;
 
-    const status = STATUS_DATA[project.statusId] || {
-      id: project.statusId,
-      name: project.statusId,
-      color: '#f2c94c',
-      category: project.statusCategory || 'started',
-    };
+    const customStatus = customStatuses.get(project.statusId);
+    const status = customStatus
+      ? {
+          id: customStatus.id,
+          name: customStatus.name,
+          color: customStatus.color,
+          category: customStatus.category,
+        }
+      : STATUS_DATA[project.statusId] || {
+          id: project.statusId,
+          name: project.statusId,
+          color: '#f2c94c',
+          category: project.statusCategory || 'started',
+        };
 
     const health = HEALTH_DATA[project.healthId] || HEALTH_DATA['no-update'];
     const priority = PRIORITY_DATA[project.priorityId] || PRIORITY_DATA['no-priority'];
@@ -505,6 +549,13 @@ export class ProjectsService {
     const subscribedProjectIds = new Set(
       subscriptions.map((subscription) => subscription.projectId),
     );
+    const customStatuses = await this.em.find(ProjectStatus, {
+      workspaceId: { $in: workspaceIds },
+      id: { $in: [...new Set(visibleProjects.map((project) => project.statusId))] },
+    });
+    const customStatusesById = new Map(
+      customStatuses.map((status) => [status.id, status]),
+    );
 
     const membersMap = new Map(members.map((m) => [m.id, toSafeMember(m)]));
     const labelsMap = new Map(labels.map((l) => [l.id, l]));
@@ -527,6 +578,7 @@ export class ProjectsService {
         projectTeamIdsByProject.get(p.id) ?? [],
         subscribedProjectIds.has(p.id),
         workspaceByTeamId.get(p.teamId),
+        customStatusesById,
       ),
     );
   }
@@ -579,6 +631,12 @@ export class ProjectsService {
       ...(team?.workspaceId ? { workspaceId: team.workspaceId } : {}),
       $or: [{ teamId: null }, { teamId: { $in: projectTeamIds } }],
     });
+    const customStatuses = team.workspaceId
+      ? await this.em.find(ProjectStatus, {
+          workspaceId: team.workspaceId,
+          id: project.statusId,
+        })
+      : [];
 
     const membersMap = new Map(members.map((m) => [m.id, toSafeMember(m)]));
     const labelsMap = new Map(labels.map((l) => [l.id, l]));
@@ -597,6 +655,7 @@ export class ProjectsService {
       projectTeamIds,
       Boolean(subscription),
       team.workspaceId,
+      new Map(customStatuses.map((status) => [status.id, status])),
     );
   }
 
@@ -706,9 +765,20 @@ export class ProjectsService {
   async create(dto: CreateProjectDto, memberId: string) {
     const startDate = dto.startDate ? new Date(dto.startDate) : undefined;
     const targetDate = dto.targetDate ? new Date(dto.targetDate) : undefined;
+    const projectTeamIds = await this.validateProjectTeamIds(
+      dto.teamIds ?? [],
+      dto.teamId,
+      memberId,
+    );
+    const resolvedStatus = await this.resolveProjectStatus(
+      dto.statusId || 'in-progress',
+      dto.statusCategory,
+      dto.teamId,
+    );
     const createPropertyError = getProjectPropertyValidationError({
-      statusId: dto.statusId || 'in-progress',
-      statusCategory: dto.statusCategory || 'started',
+      statusId: resolvedStatus.id,
+      statusCategory: resolvedStatus.category,
+      allowCustomStatus: true,
       priorityId: dto.priorityId || 'no-priority',
       healthId: dto.healthId || 'on-track',
       percentComplete: dto.percentComplete ?? 0,
@@ -716,11 +786,6 @@ export class ProjectsService {
       targetDate,
     });
     if (createPropertyError) throw new BadRequestException(createPropertyError);
-    const projectTeamIds = await this.validateProjectTeamIds(
-      dto.teamIds ?? [],
-      dto.teamId,
-      memberId,
-    );
     await this.validateLeadId(dto.leadId || memberId, dto.teamId, memberId);
     await this.validateInitiativeId(dto.initiativeId, dto.teamId, memberId);
     if (dto.labelIds !== undefined) await this.validateLabelIds(dto.labelIds, dto.teamId);
@@ -735,8 +800,8 @@ export class ProjectsService {
       name: dto.name,
       teamId: dto.teamId,
       leadId: dto.leadId || memberId,
-      statusId: dto.statusId || 'in-progress',
-      statusCategory: dto.statusCategory || 'started',
+      statusId: resolvedStatus.id,
+      statusCategory: resolvedStatus.category,
       priorityId: dto.priorityId || 'no-priority',
       healthId: dto.healthId || 'on-track',
       percentComplete: dto.percentComplete || 0,
@@ -792,9 +857,18 @@ export class ProjectsService {
       dto.startDate !== undefined ? new Date(dto.startDate) : project.startDate;
     const nextTargetDate =
       dto.targetDate !== undefined ? new Date(dto.targetDate) : project.targetDate;
+    const resolvedStatus =
+      dto.statusId !== undefined || dto.statusCategory !== undefined
+        ? await this.resolveProjectStatus(
+            dto.statusId ?? project.statusId,
+            dto.statusCategory,
+            nextTeamId,
+          )
+        : undefined;
     const updatePropertyError = getProjectPropertyValidationError({
-      statusId: dto.statusId,
-      statusCategory: dto.statusCategory,
+      statusId: resolvedStatus?.id,
+      statusCategory: resolvedStatus?.category,
+      allowCustomStatus: true,
       priorityId: dto.priorityId,
       healthId: dto.healthId,
       percentComplete: dto.percentComplete,
@@ -822,8 +896,10 @@ export class ProjectsService {
     if (dto.name !== undefined) project.name = dto.name;
     if (dto.teamId !== undefined) project.teamId = dto.teamId;
     if (dto.leadId !== undefined) project.leadId = dto.leadId;
-    if (dto.statusId !== undefined) project.statusId = dto.statusId;
-    if (dto.statusCategory !== undefined) project.statusCategory = dto.statusCategory;
+    if (resolvedStatus) {
+      project.statusId = resolvedStatus.id;
+      project.statusCategory = resolvedStatus.category;
+    }
     if (dto.priorityId !== undefined) project.priorityId = dto.priorityId;
     if (dto.healthId !== undefined) {
       project.healthId = dto.healthId;

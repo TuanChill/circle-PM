@@ -30,18 +30,13 @@ import {
 } from '@/hooks/queries/use-project-templates-query';
 import { useMembers } from '@/hooks/queries/use-members-query';
 import { useTeams } from '@/hooks/queries/use-teams-query';
+import { useProjectStatuses } from '@/hooks/queries/use-project-statuses-query';
+import { getProjectStatusOptions } from '@/lib/project-status';
 import type { ProjectTemplate, ProjectTemplateConfig } from '@/services/project-templates.service';
 import { useParams } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 
-const statuses = [
-   ['backlog', 'Backlog'],
-   ['unstarted', 'Planned'],
-   ['in-progress', 'In Progress'],
-   ['done', 'Completed'],
-   ['canceled', 'Canceled'],
-];
 const priorities = [
    ['no-priority', 'No priority'],
    ['urgent', 'Urgent'],
@@ -49,14 +44,6 @@ const priorities = [
    ['medium', 'Medium'],
    ['low', 'Low'],
 ];
-const categoryFor = (id: string) =>
-   id === 'done'
-      ? 'completed'
-      : id === 'backlog'
-        ? 'backlog'
-        : id === 'canceled'
-          ? 'canceled'
-          : 'started';
 const lines = (value: string) =>
    value
       .split('\n')
@@ -67,6 +54,7 @@ function makeConfig(
    milestones: string,
    issues: string,
    statusId: string,
+   statusOptions: any[],
    priorityId: string,
    leadId: string,
    initiativeId: string,
@@ -76,7 +64,7 @@ function makeConfig(
    return {
       project: {
          statusId,
-         statusCategory: categoryFor(statusId),
+         statusCategory: statusOptions.find((status) => status.id === statusId)?.category,
          priorityId,
          teamIds,
          leadId: leadId || undefined,
@@ -106,6 +94,7 @@ function TemplateEditor({
    teams,
    members,
    initiatives,
+   statusOptions,
    optionError,
    onClose,
    onCreate,
@@ -158,6 +147,7 @@ function TemplateEditor({
             milestones,
             issues,
             statusId,
+            statusOptions,
             priorityId,
             leadId,
             initiativeId,
@@ -271,9 +261,9 @@ function TemplateEditor({
                            <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                           {statuses.map(([id, label]) => (
-                              <SelectItem key={id} value={id}>
-                                 {label}
+                           {statusOptions.map((status: any) => (
+                              <SelectItem key={status.id} value={status.id}>
+                                 {status.name}
                               </SelectItem>
                            ))}
                         </SelectContent>
@@ -366,7 +356,10 @@ function TemplateEditor({
                   <Button
                      type="submit"
                      disabled={
-                        !name.trim() || (scope === 'team' && !teamId) || Boolean(optionError)
+                        !name.trim() ||
+                        (scope === 'team' && !teamId) ||
+                        Boolean(optionError) ||
+                        !statusOptions.some((status: any) => status.id === statusId)
                      }
                   >
                      {template ? 'Save changes' : 'Create template'}
@@ -384,10 +377,14 @@ export default function ProjectTemplatesSettings() {
    const teamsQuery = useTeams();
    const membersQuery = useMembers();
    const initiativesQuery = useInitiatives();
+   const statusesQuery = useProjectStatuses(orgId);
+   const statusOptions = getProjectStatusOptions(statusesQuery.data ?? []);
    const { data: teams = [] } = teamsQuery;
    const { data: members = [] } = membersQuery;
    const { data: initiatives = [] } = initiativesQuery;
-   const optionError = [teamsQuery, membersQuery, initiativesQuery].find((query) => query.isError);
+   const optionError = [teamsQuery, membersQuery, initiativesQuery, statusesQuery].find(
+      (query) => query.isError
+   );
    const create = useCreateProjectTemplate();
    const update = useUpdateProjectTemplate();
    const duplicate = useDuplicateProjectTemplate();
@@ -518,6 +515,7 @@ export default function ProjectTemplatesSettings() {
             teams={teams}
             members={members}
             initiatives={initiatives}
+            statusOptions={statusOptions}
             optionError={optionError}
             onCreate={async (payload: any) => {
                await create.mutateAsync(payload);

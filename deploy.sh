@@ -6,6 +6,7 @@ COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.prod.yml)
 DEPLOY_REF="${1:-origin/main}"
 
 cd "$APP_DIR"
+previous_ref="$(git rev-parse HEAD 2>/dev/null || true)"
 
 exec 9>/run/lock/circle-be-deploy.lock
 if ! flock -w 600 9; then
@@ -104,6 +105,59 @@ if [[ "${#build_targets[@]}" -gt 0 ]]; then
   "${COMPOSE[@]}" build "${build_targets[@]}"
 else
   echo "No backend image changes detected; reusing existing images."
+fi
+
+backup_required=false
+if [[ -z "$previous_ref" ]] || ! git cat-file -e "${previous_ref}^{commit}" 2>/dev/null || \
+  ! git diff --quiet "$previous_ref" "$DEPLOY_REF" -- apps/project-service/src/database/migrations; then
+  backup_required=true
+fi
+
+if [[ "$backup_required" == true ]]; then
+  backup_dir="/opt/circle/db-backups"
+  backup_stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  backup_prefix="project-service-${backup_stamp}-$(git rev-parse --short "$DEPLOY_REF")"
+  backup_dump="$backup_dir/$backup_prefix.dump"
+  backup_schema="$backup_dir/$backup_prefix.schema.sql"
+  dump_tmp="$backup_dump.partial"
+  schema_tmp="$backup_schema.partial"
+  container_dump="/tmp/$backup_prefix.dump"
+
+  mkdir -p "$backup_dir"
+  chmod 700 "$backup_dir"
+  trap 'rm -f "$dump_tmp" "$schema_tmp"; docker exec nest_turbo_db rm -f "$container_dump" "/tmp/verify-$backup_prefix.dump" >/dev/null 2>&1 || true' EXIT
+
+  database_bytes="$("${COMPOSE[@]}" exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT pg_database_size(current_database())"')"
+  available_bytes="$(df -Pk "$backup_dir" | awk 'NR == 2 { printf "%.0f", $4 * 1024 }')"
+  if [[ ! "$database_bytes" =~ ^[0-9]+$ || ! "$available_bytes" =~ ^[0-9]+$ ]]; then
+    echo "Could not verify database size and backup disk capacity; refusing to migrate." >&2
+    exit 1
+  fi
+  if (( available_bytes < database_bytes + 1073741824 )); then
+    echo "Insufficient disk space for a verified database backup; refusing to migrate." >&2
+    exit 1
+  fi
+
+  echo "Creating pre-migration database backup..."
+  "${COMPOSE[@]}" exec -T db sh -c \
+    "pg_dump -Fc -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -f '$container_dump' && pg_restore --list '$container_dump' >/dev/null"
+  docker cp "nest_turbo_db:$container_dump" "$dump_tmp" >/dev/null
+  docker cp "$dump_tmp" "nest_turbo_db:/tmp/verify-$backup_prefix.dump" >/dev/null
+  docker exec nest_turbo_db pg_restore --list "/tmp/verify-$backup_prefix.dump" >/dev/null
+  test -s "$dump_tmp"
+  mv "$dump_tmp" "$backup_dump"
+
+  "${COMPOSE[@]}" exec -T db sh -c \
+    'pg_dump --schema-only -U "$POSTGRES_USER" -d "$POSTGRES_DB"' > "$schema_tmp"
+  test -s "$schema_tmp"
+  mv "$schema_tmp" "$backup_schema"
+  chmod 600 "$backup_dump" "$backup_schema"
+  echo "Verified pre-migration backup: $backup_dump"
+  sha256sum "$backup_dump" "$backup_schema"
+  trap - EXIT
+  docker exec nest_turbo_db rm -f "$container_dump" "/tmp/verify-$backup_prefix.dump"
+else
+  echo "No new project-service migrations detected; skipping database backup."
 fi
 
 echo "Applying database migrations..."

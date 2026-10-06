@@ -1,4 +1,5 @@
 import { Status, status } from '@/lib/workflow-status';
+import type { ProjectStatusView } from '@/lib/project-status';
 import {
    Accessibility,
    Bell,
@@ -31,7 +32,7 @@ import type { ContentBlock } from './issue-details';
 export interface Project {
    id: string;
    name: string;
-   status: Status;
+   status: ProjectStatusView;
    icon: LucideIcon | RemixiconComponentType;
    percentComplete: number;
    /** Live count of issues in this project (server-computed). */

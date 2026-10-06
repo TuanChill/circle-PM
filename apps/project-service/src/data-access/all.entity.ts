@@ -21,6 +21,7 @@ import { Notification } from './notification/notification.entity';
 import { ProjectActivity } from './project/project-activity.entity';
 import { ProjectMember } from './project/project-member.entity';
 import { ProjectMilestone } from './project/project-milestone.entity';
+import { ProjectStatus } from './project/project-status.entity';
 import { ProjectSubscription } from './project/project-subscription.entity';
 import { ProjectTeam } from './project/project-team.entity';
 import { ProjectTemplate } from './project/project-template.entity';
@@ -60,6 +61,7 @@ export const ALL_ENTITIES = [
   IssueLabel,
   ProjectLabel,
   Project,
+  ProjectStatus,
   ProjectMilestone,
   ProjectMember,
   ProjectActivity,
