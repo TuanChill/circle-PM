@@ -1,6 +1,6 @@
 ---
 title: "Use custom statuses throughout projects"
-status: in-progress
+status: complete
 priority: P2
 effort: "3h"
 dependencies: [1, 2]
@@ -37,11 +37,11 @@ Make newly created status metadata usable in every project flow that currently d
 
 ## Success Criteria
 
-- [ ] A custom status can be assigned from project overview, details panel, project list, project creation, and project templates.
-- [ ] Selected custom status shows its configured name/color in selectors and project summary surfaces.
-- [ ] Existing projects, templates, and the default `in-progress` selection continue to work unchanged.
-- [ ] Project category filters and initiative progress still use the parent lifecycle category.
-- [ ] Issue status selectors and project issue-grouping behavior are unchanged.
+- [x] A custom status can be assigned from project overview, details panel, project list, project creation, and project templates.
+- [x] Selected custom status shows its configured name/color in selectors and project summary surfaces.
+- [x] Existing projects, templates, and the default `in-progress` selection continue to work unchanged.
+- [x] Project category filters and initiative progress still use the parent lifecycle category.
+- [x] Issue status selectors and project issue-grouping behavior are unchanged.
 
 ## Files to Create / Modify
 

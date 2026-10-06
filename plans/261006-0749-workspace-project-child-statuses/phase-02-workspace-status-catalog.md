@@ -1,6 +1,6 @@
 ---
 title: "Create child statuses in settings"
-status: in-progress
+status: complete
 priority: P2
 effort: "2h"
 dependencies: [1]
@@ -38,7 +38,7 @@ Replace the disabled plus buttons with a focused create-status form in each life
 
 ## Success Criteria
 
-- [ ] Creating from Backlog, Planned, In Progress, Completed, or Canceled stores the status under that group and survives refresh.
+- [x] Creating from Backlog, Planned, In Progress, Completed, or Canceled stores the status under that group and survives refresh.
 - [x] Blank/duplicate names and invalid colors show an actionable error without losing entered values.
 - [x] Custom statuses with zero assigned projects remain visible with a zero count.
 - [x] Members without management permission cannot create statuses through either UI or API.
