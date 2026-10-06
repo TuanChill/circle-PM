@@ -1,0 +1,3 @@
+- [mcp-server destructive confirm pattern](mcp_server_destructive_confirm_pattern.md) — how confirm gating works per tool shape; 2 real gaps found (team_manage_member remove, cycle_manage_calendar_subscription delete)
+- [mcp-server plan accepted scope decisions](mcp_server_plan_accepted_scope_decisions.md) — zero tests, JWT reuse, no global kill switch are intentional, don't re-flag as oversights
+- [nest-turbo-starter repo facts](nest_turbo_starter_repo_facts.md) — oxlint is the linter; winston raw-Logger vs Nest LoggerService `.log()` distinction; libs/core HttpService vs narrower wrappers for query params

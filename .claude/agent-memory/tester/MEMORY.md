@@ -1,0 +1,1 @@
+- [Monorepo structure & shared-lib dist gotcha](project_monorepo-structure.md) — pnpm filter names, check-types/build scripts, libs/common+core stale-dist runtime risk
