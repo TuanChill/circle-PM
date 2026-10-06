@@ -34,8 +34,9 @@ export class ViewsService {
       throw new NotFoundException(notFoundMessage);
     }
     if (view.ownerId === memberId) return;
+    if (!view.teamId) return;
     const accessibleTeamIds = await this.workspacesService.getAccessibleTeamIds(memberId);
-    if (!view.teamId || !accessibleTeamIds.includes(view.teamId)) {
+    if (!accessibleTeamIds.includes(view.teamId)) {
       throw new NotFoundException(notFoundMessage);
     }
   }
@@ -132,7 +133,11 @@ export class ViewsService {
       if (!accessibleTeamIds.includes(teamId)) return [];
       where.teamId = teamId;
     } else {
-      where.$or = [{ ownerId: memberId }, { teamId: { $in: accessibleTeamIds } }];
+      where.$or = [
+        { ownerId: memberId },
+        { teamId: { $in: accessibleTeamIds } },
+        { teamId: null },
+      ];
     }
     if (type) where.type = type;
     if (projectId) where.projectId = projectId;
