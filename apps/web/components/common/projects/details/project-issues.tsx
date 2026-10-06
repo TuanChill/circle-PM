@@ -3,7 +3,7 @@
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
 import { applyIssueFilters } from '@/components/common/issues/issue-filter-columns';
 import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
-import { displayOrderedStatus } from '@/lib/workflow-status';
+import { workflowOrderedStatus } from '@/lib/workflow-status';
 import { useFilterStore } from '@/store/filter-store';
 import { useMemo, useEffect } from 'react';
 import { ProjectSidePanel } from './project-side-panel';
@@ -177,7 +177,7 @@ export default function ProjectIssues({ projectId }: ProjectIssuesProps) {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={issues}
-                  statuses={displayOrderedStatus}
+                  statuses={workflowOrderedStatus}
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="Add issues to the project"
                   emptyStateSubtitle="Start building your project by creating an issue."

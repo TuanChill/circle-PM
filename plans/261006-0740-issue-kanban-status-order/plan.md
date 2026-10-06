@@ -12,7 +12,7 @@ created: 2026-10-06
 
 ## Overview
 
-Issue and cycle views currently use `displayOrderedStatus`, which places started statuses before backlog and unstarted statuses. Use the existing workflow lifecycle order so Kanban columns progress from triage/backlog through unstarted and started work to completed and canceled states.
+Issue views should use the canonical workflow lifecycle order so Kanban columns progress from triage/backlog through unstarted and started work to completed and canceled states. The Project Issues tab was missed by the original fix and continued to use `displayOrderedStatus`.
 
 ## Goals
 
@@ -29,7 +29,7 @@ Issue and cycle views currently use `displayOrderedStatus`, which places started
 ## Success Criteria
 
 - [x] Status groups render as triage, backlog, unstarted, started, completed, then canceled.
-- [x] The same order is used by all-issues and cycle views in both board and list layouts.
+- [x] The same order is used by all-issues, cycle, and Project Issues views in both board and list layouts.
 - [x] Active and backlog tabs continue to include only their configured status categories.
 - [x] Existing status icons, labels, grouping behavior, and issue updates remain unchanged.
 
