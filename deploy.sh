@@ -6,7 +6,9 @@ COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.prod.yml)
 DEPLOY_REF="${1:-origin/main}"
 
 cd "$APP_DIR"
-previous_ref="$(git rev-parse HEAD 2>/dev/null || true)"
+deployment_state_dir="/opt/circle/deploy-state"
+deployment_ref_file="$deployment_state_dir/project-service-last-deployed-sha"
+previous_ref="$(cat "$deployment_ref_file" 2>/dev/null || true)"
 
 exec 9>/run/lock/circle-be-deploy.lock
 if ! flock -w 600 9; then
@@ -108,7 +110,8 @@ else
 fi
 
 backup_required=false
-if [[ -z "$previous_ref" ]] || ! git cat-file -e "${previous_ref}^{commit}" 2>/dev/null || \
+if [[ ! "$previous_ref" =~ ^[0-9a-fA-F]{40}$ ]] || \
+  ! git cat-file -e "${previous_ref}^{commit}" 2>/dev/null || \
   ! git diff --quiet "$previous_ref" "$DEPLOY_REF" -- apps/project-service/src/database/migrations; then
   backup_required=true
 fi
@@ -184,3 +187,9 @@ done
 
 echo "Deployment completed. Runtime smoke tests are intentionally local-only."
 "${COMPOSE[@]}" ps
+
+mkdir -p "$deployment_state_dir"
+chmod 700 "$deployment_state_dir"
+printf '%s\n' "$(git rev-parse "$DEPLOY_REF")" > "$deployment_ref_file.partial"
+chmod 600 "$deployment_ref_file.partial"
+mv "$deployment_ref_file.partial" "$deployment_ref_file"
