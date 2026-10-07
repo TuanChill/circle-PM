@@ -260,6 +260,17 @@ export function CreateNewIssue() {
       }
    };
 
+   const isPickerPopoverInteraction = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[data-slot="popover-content"]')) {
+         return true;
+      }
+
+      return event
+         .composedPath()
+         .some((node) => node instanceof Element && node.matches('[data-slot="popover-content"]'));
+   };
+
    return (
       <Dialog open={isOpen} onOpenChange={(value) => (value ? openModal() : closeModal())}>
          <DialogContent
@@ -268,10 +279,7 @@ export function CreateNewIssue() {
                // Picker popovers render in a portal outside the dialog content.
                // Treat their interactions as inside so choosing an option keeps
                // the issue form open.
-               if (
-                  event.target instanceof Element &&
-                  event.target.closest('[data-slot="popover-content"]')
-               ) {
+               if (isPickerPopoverInteraction(event.detail.originalEvent)) {
                   event.preventDefault();
                }
             }}
