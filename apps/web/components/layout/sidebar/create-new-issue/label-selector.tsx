@@ -187,15 +187,8 @@ export function LabelSelector({
                               <CommandItem
                                  key={label.id}
                                  value={`${label.name} ${label.id}`}
-                                 onClick={(event) => {
-                                    event.preventDefault();
+                                 onSelect={() => {
                                     handleLabelToggle(label);
-                                 }}
-                                 onKeyDown={(event) => {
-                                    if (event.key === 'Enter' || event.key === ' ') {
-                                       event.preventDefault();
-                                       handleLabelToggle(label);
-                                    }
                                  }}
                                  className="flex items-center justify-between"
                               >
