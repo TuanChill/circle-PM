@@ -186,11 +186,9 @@ export function LabelSelector({
                               <CommandItem
                                  key={label.id}
                                  value={`${label.name} ${label.id}`}
-                                 onMouseDown={(event) => {
-                                    if (event.button === 0) {
-                                       event.preventDefault();
-                                       handleLabelToggle(label);
-                                    }
+                                 onClick={(event) => {
+                                    event.preventDefault();
+                                    handleLabelToggle(label);
                                  }}
                                  onKeyDown={(event) => {
                                     if (event.key === 'Enter' || event.key === ' ') {
