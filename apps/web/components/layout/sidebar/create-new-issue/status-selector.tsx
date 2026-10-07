@@ -67,6 +67,7 @@ export function StatusSelector({ status, onChange }: StatusSelectorProps) {
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
+               onPointerDownCapture={(event) => event.stopPropagation()}
             >
                <Command>
                   <CommandInput placeholder="Set status..." />

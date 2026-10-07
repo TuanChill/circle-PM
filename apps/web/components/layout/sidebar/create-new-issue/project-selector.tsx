@@ -77,6 +77,7 @@ export function ProjectSelector({ project, onChange }: ProjectSelectorProps) {
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
+               onPointerDownCapture={(event) => event.stopPropagation()}
             >
                <Command>
                   <CommandInput placeholder="Set project..." />
