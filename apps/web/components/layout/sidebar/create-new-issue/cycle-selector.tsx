@@ -55,8 +55,9 @@ export function CycleSelector({
    const selectedCycle = cycles.find((c) => c.id === value);
 
    return (
-      <Popover
-         open={open}
+         <Popover
+            modal
+            open={open}
          onOpenChange={(nextOpen) => {
             setOpen(nextOpen);
             onOpenChange?.(nextOpen);

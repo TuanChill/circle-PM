@@ -90,8 +90,9 @@ export function EstimateSelector({
    };
 
    return (
-      <Popover
-         open={open}
+         <Popover
+            modal
+            open={open}
          onOpenChange={(nextOpen) => {
             setOpen(nextOpen);
             onOpenChange?.(nextOpen);

@@ -61,6 +61,7 @@ export function ProjectSelector({
    return (
       <div className="*:not-first:mt-2">
          <Popover
+            modal
             open={open}
             onOpenChange={(nextOpen) => {
                setOpen(nextOpen);
