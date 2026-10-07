@@ -261,17 +261,6 @@ export function CreateNewIssue() {
       }
    };
 
-   const isPickerPopoverInteraction = (event: Event) => {
-      const target = event.target;
-      if (target instanceof Element && target.closest('[data-slot="popover-content"]')) {
-         return true;
-      }
-
-      return event
-         .composedPath()
-         .some((node) => node instanceof Element && node.matches('[data-slot="popover-content"]'));
-   };
-
    const handlePickerOpenChange = (open: boolean) => {
       if (open) {
          isPickerInteractionRef.current = true;
@@ -299,17 +288,6 @@ export function CreateNewIssue() {
       >
          <DialogContent
             className="w-full sm:max-w-[750px] p-0 shadow-xl"
-            onInteractOutside={(event) => {
-               // Picker popovers render in a portal outside the dialog content.
-               // Treat their interactions as inside so choosing an option keeps
-               // the issue form open.
-               if (
-                  isPickerInteractionRef.current ||
-                  isPickerPopoverInteraction(event.detail.originalEvent)
-               ) {
-                  event.preventDefault();
-               }
-            }}
          >
             <DialogHeader>
                <DialogTitle>
