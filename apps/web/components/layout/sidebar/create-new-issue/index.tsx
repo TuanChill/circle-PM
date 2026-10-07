@@ -262,9 +262,7 @@ export function CreateNewIssue() {
    };
 
    const handlePickerOpenChange = (open: boolean) => {
-      if (open) {
-         isPickerInteractionRef.current = true;
-      } else {
+      if (!open) {
          window.setTimeout(() => {
             isPickerInteractionRef.current = false;
          }, 0);
@@ -273,6 +271,9 @@ export function CreateNewIssue() {
 
    const handlePickerInteractionStart = () => {
       isPickerInteractionRef.current = true;
+      window.setTimeout(() => {
+         isPickerInteractionRef.current = false;
+      }, 0);
    };
 
    return (
