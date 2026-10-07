@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 interface LabelSelectorProps {
    selectedLabels: LabelInterface[];
    onChange: (labels: LabelInterface[]) => void;
+   onOpenChange?: (open: boolean) => void;
    /** Project labels do not show issue counts in Linear's project label menu. */
    showCounts?: boolean;
    /** Linear allows creating a project label directly from the label menu. */
@@ -31,6 +32,7 @@ interface LabelSelectorProps {
 export function LabelSelector({
    selectedLabels,
    onChange,
+   onOpenChange,
    showCounts = true,
    allowCreate = false,
    scope = 'issue',
@@ -95,7 +97,13 @@ export function LabelSelector({
 
    return (
       <div className="*:not-first:mt-2">
-         <Popover open={open} onOpenChange={setOpen}>
+         <Popover
+            open={open}
+            onOpenChange={(nextOpen) => {
+               setOpen(nextOpen);
+               onOpenChange?.(nextOpen);
+            }}
+         >
             <PopoverTrigger asChild>
                <Button
                   id={id}

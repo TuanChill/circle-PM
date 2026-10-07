@@ -49,6 +49,7 @@ import {
 export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState<boolean>(false);
    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+   const [isLabelPickerOpen, setIsLabelPickerOpen] = useState<boolean>(false);
    const {
       isOpen,
       defaultStatus,
@@ -274,12 +275,12 @@ export function CreateNewIssue() {
    return (
       <Dialog open={isOpen} onOpenChange={(value) => (value ? openModal() : closeModal())}>
          <DialogContent
-            className="w-full sm:max-w-[750px] p-0 shadow-xl top-[30%]"
+            className="w-full sm:max-w-[750px] p-0 shadow-xl"
             onInteractOutside={(event) => {
                // Picker popovers render in a portal outside the dialog content.
                // Treat their interactions as inside so choosing an option keeps
                // the issue form open.
-               if (isPickerPopoverInteraction(event.detail.originalEvent)) {
+               if (isLabelPickerOpen || isPickerPopoverInteraction(event.detail.originalEvent)) {
                   event.preventDefault();
                }
             }}
@@ -392,6 +393,7 @@ export function CreateNewIssue() {
                   <LabelSelector
                      selectedLabels={addIssueForm.labels}
                      teamId={activeTeamId}
+                     onOpenChange={setIsLabelPickerOpen}
                      onChange={(newLabels) =>
                         setAddIssueForm({ ...addIssueForm, labels: newLabels })
                      }
