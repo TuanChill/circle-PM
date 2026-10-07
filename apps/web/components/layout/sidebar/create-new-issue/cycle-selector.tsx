@@ -19,11 +19,19 @@ import { useEffect, useId, useState } from 'react';
 interface CycleSelectorProps {
    cycle: Cycle | undefined;
    teamId?: string;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (cycle: Cycle | undefined) => void;
 }
 
 /** Cycle picker for the issue creation form — same shape as ProjectSelector. */
-export function CycleSelector({ cycle, teamId, onChange }: CycleSelectorProps) {
+export function CycleSelector({
+   cycle,
+   teamId,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: CycleSelectorProps) {
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string | undefined>(cycle?.id);
@@ -47,7 +55,13 @@ export function CycleSelector({ cycle, teamId, onChange }: CycleSelectorProps) {
    const selectedCycle = cycles.find((c) => c.id === value);
 
    return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover
+         open={open}
+         onOpenChange={(nextOpen) => {
+            setOpen(nextOpen);
+            onOpenChange?.(nextOpen);
+         }}
+      >
          <PopoverTrigger asChild>
             <Button
                id={id}
@@ -64,7 +78,10 @@ export function CycleSelector({ cycle, teamId, onChange }: CycleSelectorProps) {
          <PopoverContent
             className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
             align="start"
-            onPointerDownCapture={(event) => event.stopPropagation()}
+            onPointerDownCapture={(event) => {
+               onInteractionStart?.();
+               event.stopPropagation();
+            }}
          >
             <Command>
                <CommandInput placeholder="Set cycle..." />

@@ -18,10 +18,17 @@ import { useEffect, useId, useState } from 'react';
 
 interface ProjectSelectorProps {
    project: Project | undefined;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (project: Project | undefined) => void;
 }
 
-export function ProjectSelector({ project, onChange }: ProjectSelectorProps) {
+export function ProjectSelector({
+   project,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: ProjectSelectorProps) {
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string | undefined>(project?.id);
@@ -53,7 +60,13 @@ export function ProjectSelector({ project, onChange }: ProjectSelectorProps) {
 
    return (
       <div className="*:not-first:mt-2">
-         <Popover open={open} onOpenChange={setOpen}>
+         <Popover
+            open={open}
+            onOpenChange={(nextOpen) => {
+               setOpen(nextOpen);
+               onOpenChange?.(nextOpen);
+            }}
+         >
             <PopoverTrigger asChild>
                <Button
                   id={id}
@@ -77,7 +90,10 @@ export function ProjectSelector({ project, onChange }: ProjectSelectorProps) {
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
-               onPointerDownCapture={(event) => event.stopPropagation()}
+               onPointerDownCapture={(event) => {
+                  onInteractionStart?.();
+                  event.stopPropagation();
+               }}
             >
                <Command>
                   <CommandInput placeholder="Set project..." />

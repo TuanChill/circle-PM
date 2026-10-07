@@ -17,10 +17,17 @@ import { useEffect, useId, useState } from 'react';
 
 interface PrioritySelectorProps {
    priority: Priority;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (priority: Priority) => void;
 }
 
-export function PrioritySelector({ priority, onChange }: PrioritySelectorProps) {
+export function PrioritySelector({
+   priority,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: PrioritySelectorProps) {
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string>(priority.id);
@@ -43,7 +50,13 @@ export function PrioritySelector({ priority, onChange }: PrioritySelectorProps) 
 
    return (
       <div className="*:not-first:mt-2">
-         <Popover open={open} onOpenChange={setOpen}>
+         <Popover
+            open={open}
+            onOpenChange={(nextOpen) => {
+               setOpen(nextOpen);
+               onOpenChange?.(nextOpen);
+            }}
+         >
             <PopoverTrigger asChild>
                <Button
                   id={id}
@@ -69,7 +82,10 @@ export function PrioritySelector({ priority, onChange }: PrioritySelectorProps) 
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
-               onPointerDownCapture={(event) => event.stopPropagation()}
+               onPointerDownCapture={(event) => {
+                  onInteractionStart?.();
+                  event.stopPropagation();
+               }}
             >
                <Command>
                   <CommandInput placeholder="Set priority..." />

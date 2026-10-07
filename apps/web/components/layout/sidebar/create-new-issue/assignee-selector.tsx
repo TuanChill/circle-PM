@@ -19,10 +19,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AssigneeSelectorProps {
    assignee: User | null;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (assignee: User | null) => void;
 }
 
-export function AssigneeSelector({ assignee, onChange }: AssigneeSelectorProps) {
+export function AssigneeSelector({
+   assignee,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: AssigneeSelectorProps) {
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string | null>(assignee?.id || null);
@@ -54,7 +61,13 @@ export function AssigneeSelector({ assignee, onChange }: AssigneeSelectorProps) 
 
    return (
       <div className="*:not-first:mt-2">
-         <Popover open={open} onOpenChange={setOpen}>
+         <Popover
+            open={open}
+            onOpenChange={(nextOpen) => {
+               setOpen(nextOpen);
+               onOpenChange?.(nextOpen);
+            }}
+         >
             <PopoverTrigger asChild>
                <Button
                   id={id}
@@ -78,7 +91,10 @@ export function AssigneeSelector({ assignee, onChange }: AssigneeSelectorProps) 
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
-               onPointerDownCapture={(event) => event.stopPropagation()}
+               onPointerDownCapture={(event) => {
+                  onInteractionStart?.();
+                  event.stopPropagation();
+               }}
             >
                <Command>
                   <CommandInput placeholder="Assign to..." />

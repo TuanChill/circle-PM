@@ -17,10 +17,17 @@ import { useEffect, useId, useState } from 'react';
 
 interface StatusSelectorProps {
    status: Status;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (status: Status) => void;
 }
 
-export function StatusSelector({ status, onChange }: StatusSelectorProps) {
+export function StatusSelector({
+   status,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: StatusSelectorProps) {
    const id = useId();
    const [open, setOpen] = useState<boolean>(false);
    const [value, setValue] = useState<string>(status.id);
@@ -43,7 +50,13 @@ export function StatusSelector({ status, onChange }: StatusSelectorProps) {
 
    return (
       <div className="*:not-first:mt-2">
-         <Popover open={open} onOpenChange={setOpen}>
+         <Popover
+            open={open}
+            onOpenChange={(nextOpen) => {
+               setOpen(nextOpen);
+               onOpenChange?.(nextOpen);
+            }}
+         >
             <PopoverTrigger asChild>
                <Button
                   id={id}
@@ -67,7 +80,10 @@ export function StatusSelector({ status, onChange }: StatusSelectorProps) {
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
-               onPointerDownCapture={(event) => event.stopPropagation()}
+               onPointerDownCapture={(event) => {
+                  onInteractionStart?.();
+                  event.stopPropagation();
+               }}
             >
                <Command>
                   <CommandInput placeholder="Set status..." />

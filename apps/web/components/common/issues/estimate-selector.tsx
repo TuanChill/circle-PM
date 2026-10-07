@@ -56,10 +56,18 @@ function displayValue(value: number, settings: EstimateSettings) {
 interface EstimateSelectorProps {
    estimate?: number | null;
    settings?: EstimateSettings;
+   onOpenChange?: (open: boolean) => void;
+   onInteractionStart?: () => void;
    onChange: (estimate: number | null) => void;
 }
 
-export function EstimateSelector({ estimate, settings, onChange }: EstimateSelectorProps) {
+export function EstimateSelector({
+   estimate,
+   settings,
+   onOpenChange,
+   onInteractionStart,
+   onChange,
+}: EstimateSelectorProps) {
    const id = useId();
    const [open, setOpen] = useState(false);
    const currentSettings = settings ?? {
@@ -82,7 +90,13 @@ export function EstimateSelector({ estimate, settings, onChange }: EstimateSelec
    };
 
    return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover
+         open={open}
+         onOpenChange={(nextOpen) => {
+            setOpen(nextOpen);
+            onOpenChange?.(nextOpen);
+         }}
+      >
          <PopoverTrigger asChild>
             <Button
                id={id}
@@ -96,7 +110,18 @@ export function EstimateSelector({ estimate, settings, onChange }: EstimateSelec
                {value === null ? 'No estimate' : displayValue(value, currentSettings)}
             </Button>
          </PopoverTrigger>
-         <PopoverContent className="border-input w-44 p-0" align="start">
+         <PopoverContent
+            className="border-input w-44 p-0"
+            align="start"
+            onPointerDownCapture={
+               onInteractionStart
+                  ? (event) => {
+                       onInteractionStart();
+                       event.stopPropagation();
+                    }
+                  : undefined
+            }
+         >
             <Command>
                <CommandList>
                   <CommandEmpty>No estimates available.</CommandEmpty>

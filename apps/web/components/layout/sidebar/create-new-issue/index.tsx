@@ -49,8 +49,7 @@ import {
 export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState<boolean>(false);
    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-   const [isLabelPickerOpen, setIsLabelPickerOpen] = useState<boolean>(false);
-   const isLabelPickerOpenRef = useRef(false);
+   const isPickerInteractionRef = useRef(false);
    const {
       isOpen,
       defaultStatus,
@@ -273,13 +272,27 @@ export function CreateNewIssue() {
          .some((node) => node instanceof Element && node.matches('[data-slot="popover-content"]'));
    };
 
+   const handlePickerOpenChange = (open: boolean) => {
+      if (open) {
+         isPickerInteractionRef.current = true;
+      } else {
+         window.setTimeout(() => {
+            isPickerInteractionRef.current = false;
+         }, 0);
+      }
+   };
+
+   const handlePickerInteractionStart = () => {
+      isPickerInteractionRef.current = true;
+   };
+
    return (
       <Dialog
          open={isOpen}
          onOpenChange={(value) => {
             if (value) {
                openModal();
-            } else if (!isLabelPickerOpenRef.current) {
+            } else if (!isPickerInteractionRef.current) {
                closeModal();
             }
          }}
@@ -291,8 +304,7 @@ export function CreateNewIssue() {
                // Treat their interactions as inside so choosing an option keeps
                // the issue form open.
                if (
-                  isLabelPickerOpen ||
-                  isLabelPickerOpenRef.current ||
+                  isPickerInteractionRef.current ||
                   isPickerPopoverInteraction(event.detail.originalEvent)
                ) {
                   event.preventDefault();
@@ -360,12 +372,16 @@ export function CreateNewIssue() {
                <div className="w-full flex items-center justify-start gap-1.5 flex-wrap">
                   <StatusSelector
                      status={addIssueForm.status}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newStatus) =>
                         setAddIssueForm({ ...addIssueForm, status: newStatus })
                      }
                   />
                   <PrioritySelector
                      priority={addIssueForm.priority}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newPriority) =>
                         setAddIssueForm({ ...addIssueForm, priority: newPriority })
                      }
@@ -383,16 +399,22 @@ export function CreateNewIssue() {
                              }
                            : undefined
                      }
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(estimate) => setAddIssueForm({ ...addIssueForm, estimate })}
                   />
                   <AssigneeSelector
                      assignee={addIssueForm.assignee}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newAssignee) =>
                         setAddIssueForm({ ...addIssueForm, assignee: newAssignee })
                      }
                   />
                   <ProjectSelector
                      project={addIssueForm.project}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newProject) =>
                         setAddIssueForm({ ...addIssueForm, project: newProject })
                      }
@@ -400,6 +422,8 @@ export function CreateNewIssue() {
                   <CycleSelector
                      cycle={teamCycles.find((c) => c.id === addIssueForm.cycleId)}
                      teamId={activeTeamId}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newCycle) =>
                         setAddIssueForm({ ...addIssueForm, cycleId: newCycle?.id || '' })
                      }
@@ -407,19 +431,8 @@ export function CreateNewIssue() {
                   <LabelSelector
                      selectedLabels={addIssueForm.labels}
                      teamId={activeTeamId}
-                     onOpenChange={(open) => {
-                        setIsLabelPickerOpen(open);
-                        if (open) {
-                           isLabelPickerOpenRef.current = true;
-                        } else {
-                           window.setTimeout(() => {
-                              isLabelPickerOpenRef.current = false;
-                           }, 0);
-                        }
-                     }}
-                     onInteractionStart={() => {
-                        isLabelPickerOpenRef.current = true;
-                     }}
+                     onOpenChange={handlePickerOpenChange}
+                     onInteractionStart={handlePickerInteractionStart}
                      onChange={(newLabels) =>
                         setAddIssueForm({ ...addIssueForm, labels: newLabels })
                      }
