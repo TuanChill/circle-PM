@@ -290,7 +290,11 @@ export function CreateNewIssue() {
                // Picker popovers render in a portal outside the dialog content.
                // Treat their interactions as inside so choosing an option keeps
                // the issue form open.
-               if (isLabelPickerOpen || isPickerPopoverInteraction(event.detail.originalEvent)) {
+               if (
+                  isLabelPickerOpen ||
+                  isLabelPickerOpenRef.current ||
+                  isPickerPopoverInteraction(event.detail.originalEvent)
+               ) {
                   event.preventDefault();
                }
             }}
@@ -404,8 +408,17 @@ export function CreateNewIssue() {
                      selectedLabels={addIssueForm.labels}
                      teamId={activeTeamId}
                      onOpenChange={(open) => {
-                        isLabelPickerOpenRef.current = open;
                         setIsLabelPickerOpen(open);
+                        if (open) {
+                           isLabelPickerOpenRef.current = true;
+                        } else {
+                           window.setTimeout(() => {
+                              isLabelPickerOpenRef.current = false;
+                           }, 0);
+                        }
+                     }}
+                     onInteractionStart={() => {
+                        isLabelPickerOpenRef.current = true;
                      }}
                      onChange={(newLabels) =>
                         setAddIssueForm({ ...addIssueForm, labels: newLabels })
