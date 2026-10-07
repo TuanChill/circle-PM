@@ -82,10 +82,7 @@ export function PrioritySelector({
             <PopoverContent
                className="border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0"
                align="start"
-               onPointerDownCapture={(event) => {
-                  onInteractionStart?.();
-                  event.stopPropagation();
-               }}
+               onPointerDownCapture={() => onInteractionStart?.()}
             >
                <Command>
                   <CommandInput placeholder="Set priority..." />

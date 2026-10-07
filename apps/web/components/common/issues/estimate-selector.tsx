@@ -115,10 +115,7 @@ export function EstimateSelector({
             align="start"
             onPointerDownCapture={
                onInteractionStart
-                  ? (event) => {
-                       onInteractionStart();
-                       event.stopPropagation();
-                    }
+                  ? () => onInteractionStart()
                   : undefined
             }
          >
