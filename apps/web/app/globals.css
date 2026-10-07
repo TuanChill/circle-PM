@@ -393,6 +393,10 @@ input[type='search'] {
    min-width: 0;
 }
 
+.linear-tiptap-editor .ProseMirror li.taskItem > div > p {
+   margin: 0;
+}
+
 .linear-tiptap-editor .ProseMirror li.taskItem[data-checked='true'] > div {
    text-decoration: line-through;
    color: var(--muted-foreground);
