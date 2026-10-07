@@ -67,6 +67,7 @@ export function LabelSelector({
       }
 
       onChange(newLabels);
+      setOpen(false);
    };
 
    const handleCreateLabel = async () => {

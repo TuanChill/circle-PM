@@ -50,6 +50,7 @@ export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState<boolean>(false);
    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
    const [isLabelPickerOpen, setIsLabelPickerOpen] = useState<boolean>(false);
+   const isLabelPickerOpenRef = useRef(false);
    const {
       isOpen,
       defaultStatus,
@@ -273,7 +274,16 @@ export function CreateNewIssue() {
    };
 
    return (
-      <Dialog open={isOpen} onOpenChange={(value) => (value ? openModal() : closeModal())}>
+      <Dialog
+         open={isOpen}
+         onOpenChange={(value) => {
+            if (value) {
+               openModal();
+            } else if (!isLabelPickerOpenRef.current) {
+               closeModal();
+            }
+         }}
+      >
          <DialogContent
             className="w-full sm:max-w-[750px] p-0 shadow-xl"
             onInteractOutside={(event) => {
@@ -393,7 +403,10 @@ export function CreateNewIssue() {
                   <LabelSelector
                      selectedLabels={addIssueForm.labels}
                      teamId={activeTeamId}
-                     onOpenChange={setIsLabelPickerOpen}
+                     onOpenChange={(open) => {
+                        isLabelPickerOpenRef.current = open;
+                        setIsLabelPickerOpen(open);
+                     }}
                      onChange={(newLabels) =>
                         setAddIssueForm({ ...addIssueForm, labels: newLabels })
                      }
