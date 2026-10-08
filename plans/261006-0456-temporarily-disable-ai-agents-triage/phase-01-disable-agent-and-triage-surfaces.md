@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Disable AI Agent and Triage surfaces"
-status: pending
+status: in_progress
 priority: P1
 effort: "0.5d"
 dependencies: []

@@ -123,6 +123,7 @@ Reference set: [Linear Docs](https://linear.app/docs), [Projects](https://linear
 - Issue team moves now revalidate existing issue-label joins against the destination team when `labelIds` is omitted; stale team-scoped labels cannot remain attached after a move, while workspace labels are normalized safely. Regression coverage deduplicates legacy join rows before validation.
 - Issue templates now reject a milestone default unless a project is configured, preventing legacy free-text milestone values from being persisted without a real project-owned reference. Regression coverage covers the rejection alongside project-scoped milestone validation.
 - Issue template assignees now have to belong to the configured team (or at least the target workspace for workspace templates), so invalid defaults fail at template save time instead of during issue creation.
+- Agent product access is temporarily disabled: direct Agent and AI settings routes return not found, Agent entry points and the Agents integration category are removed, and the project-service Agent module is unregistered. The Triage inbox/settings and Triage notification control are removed; the `triage` issue workflow category and its backlog/filter behavior remain supported. Agent implementation and stored data are retained for re-enablement.
 
 ## Verification evidence (2026-09-15)
 

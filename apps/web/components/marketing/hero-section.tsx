@@ -52,15 +52,6 @@ export function HeroSection() {
          />
 
          <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
-            <Reveal>
-               <Badge
-                  variant="outline"
-                  className="rounded-full border-border/60 bg-card/60 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
-               >
-                  Now with AI Agent
-               </Badge>
-            </Reveal>
-
             <Reveal delay={0.08}>
                <h1 className="mt-6 text-4xl font-semibold tracking-tight text-balance sm:text-5xl md:text-6xl">
                   Project management, built for speed.

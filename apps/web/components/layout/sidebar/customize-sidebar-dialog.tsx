@@ -43,7 +43,6 @@ export const PERSONAL_ITEMS: ItemConfig[] = [
    { key: 'inbox', label: 'Inbox', icon: Inbox, badged: true },
    // { key: 'reviews', label: 'Reviews', icon: GitPullRequestArrow, badged: true },
    { key: 'my-issues', label: 'My issues', icon: FolderKanban },
-   // { key: 'agent', label: 'Agent', icon: Bot },
 ];
 
 export const WORKSPACE_ITEMS: ItemConfig[] = [

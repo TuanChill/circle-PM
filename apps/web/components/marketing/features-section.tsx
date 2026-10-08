@@ -1,4 +1,4 @@
-import { CircleDot, RefreshCw, FolderKanban, Map, Inbox, Bot } from 'lucide-react';
+import { CircleDot, RefreshCw, FolderKanban, Map, Inbox } from 'lucide-react';
 
 import { Reveal } from '@/components/marketing/reveal';
 
@@ -32,12 +32,6 @@ const features = [
       title: 'Unified inbox',
       description:
          'Mentions, assignments, and status changes land in one place so nothing gets missed.',
-   },
-   {
-      icon: Bot,
-      title: 'AI agent',
-      description:
-         'Delegate triage, summaries, and routine updates to an agent that works inside your workspace.',
    },
 ];
 

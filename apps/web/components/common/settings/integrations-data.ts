@@ -88,64 +88,6 @@ const list: Integration[] = [
       description: 'Smoothly transition from Jira to Circle',
       color: '#2684ff',
    },
-   // Agents
-   {
-      id: 'codex',
-      name: 'Codex',
-      description: 'Delegate issues to Codex directly from Circle',
-      status: 'enabled',
-      color: '#10a37f',
-   },
-   {
-      id: 'cursor',
-      name: 'Cursor',
-      description: 'Turn issues into pull requests with Cursor cloud agents',
-      color: '#111111',
-   },
-   {
-      id: 'github-copilot',
-      name: 'GitHub Copilot',
-      description: 'Turn issues into code with the GitHub Copilot coding agent',
-      color: '#6e40c9',
-   },
-   {
-      id: 'factory',
-      name: 'Factory',
-      description: 'Assign issues from your backlog to Droids',
-      color: '#3d3d3d',
-   },
-   {
-      id: 'sentry-agent',
-      name: 'Sentry Agent',
-      description: 'Resolve issues automatically with Seer by Sentry',
-      status: 'enabled',
-      color: '#362d59',
-   },
-   {
-      id: 'devin',
-      name: 'Devin',
-      description: 'Automate work from issue to tested PR with Devin',
-      color: '#2563eb',
-   },
-   {
-      id: 'chatprd',
-      name: 'ChatPRD',
-      description: 'Writes requirements, manages issues, and gives feedback on your product work',
-      color: '#f59e0b',
-   },
-   {
-      id: 'charlie',
-      name: 'Charlie',
-      description: 'Plans, implements, and reviews your TypeScript PRs',
-      color: '#e11d48',
-   },
-   {
-      id: 'cyrus',
-      name: 'Cyrus',
-      description: 'An AI engineering agent that works through your backlog',
-      status: 'enabled',
-      color: '#7c3aed',
-   },
    // AI clients
    {
       id: 'cursor-mcp',
@@ -526,21 +468,6 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
       id: 'essentials',
       label: 'Essentials',
       items: ['github', 'slack', 'gitlab', 'figma', 'intercom', 'google-sheets'],
-   },
-   {
-      id: 'agents',
-      label: 'Agents',
-      items: [
-         'codex',
-         'cursor',
-         'github-copilot',
-         'factory',
-         'sentry-agent',
-         'devin',
-         'chatprd',
-         'charlie',
-         'cyrus',
-      ],
    },
    {
       id: 'ai-clients',

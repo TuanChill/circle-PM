@@ -19,7 +19,7 @@ import {
 import type { ProjectUpdate } from '@/mock-data/project-details';
 import { useAuthStore } from '@/store/auth-store';
 import { format, parseISO } from 'date-fns';
-import { Ellipsis, Sparkles } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ProjectSidePanel } from './project-side-panel';
 import { FileAttachments } from '@/components/common/attachments/file-attachments';
@@ -415,12 +415,6 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
                   )}
 
                   <div className="mt-3 flex items-center justify-between">
-                     <Button asChild variant="outline" size="xs" className="gap-1.5">
-                        <Link href={`/${orgId}/agent?projectId=${project.id}`}>
-                           <Sparkles className="size-3.5" />
-                           Write with Agent
-                        </Link>
-                     </Button>
                      <div className="flex items-center gap-2">
                         <Button
                            size="xs"

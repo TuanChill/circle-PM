@@ -1,7 +1,7 @@
 ---
 title: "Temporarily Disable AI Agents and Triage"
 description: "Remove access to AI Agents and Triage surfaces while preserving issue triage status and existing data for a later re-enable."
-status: pending
+status: in_progress
 priority: P2
 effort: "0.5d"
 tags: [web, backend, ai-agents, triage]
@@ -27,7 +27,7 @@ Temporarily disable the AI Agent and Triage product surfaces across the web app 
 
 | # | Phase | Status |
 |---|-------|--------|
-| 1 | [Disable AI Agent and Triage surfaces](./phase-01-disable-agent-and-triage-surfaces.md) | Pending |
+| 1 | [Disable AI Agent and Triage surfaces](./phase-01-disable-agent-and-triage-surfaces.md) | In Progress |
 
 ## Success Criteria
 

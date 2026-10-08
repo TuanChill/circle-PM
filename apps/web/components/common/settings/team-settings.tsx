@@ -32,14 +32,11 @@ import {
    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-   Bot,
    ChevronRight,
    Lock,
-   Radar,
    RefreshCcw,
    Repeat,
    Settings,
-   Sparkles,
    Tag,
    Target,
    Users,
@@ -355,14 +352,6 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
                         chevron
                         onClick={() => toast.error('Team automations are not configured')}
                      />
-                     <SettingsRow
-                        icon={<Radar className="size-4" />}
-                        title="Triage"
-                        description="Streamline how you handle requests from outside your team"
-                        trailing={<span>Unavailable</span>}
-                        chevron
-                        onClick={() => toast.error('Triage inbox is not configured')}
-                     />
                      <Link href={`/${orgId}/team/${team.id}/cycles`} className="block">
                         <SettingsRow
                            icon={<RefreshCcw className="size-4" />}
@@ -378,27 +367,6 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
                         description="Configure cadence, cooldown, and upcoming cycles"
                         chevron
                         onClick={() => setCycleSettingsOpen(true)}
-                     />
-                  </SettingsCard>
-               </SettingsSection>
-
-               <SettingsSection title="AI & Agents">
-                  <SettingsCard>
-                     <Link href={`/${orgId}/settings/ai`} className="block">
-                        <SettingsRow
-                           icon={<Bot className="size-4" />}
-                           title="Team agents"
-                           description="Add guidance for how agents should operate within this team"
-                           chevron
-                        />
-                     </Link>
-                     <SettingsRow
-                        icon={<Sparkles className="size-4" />}
-                        title="Agent skills"
-                        description="Agent skills shared with this team"
-                        trailing={<span>Unavailable</span>}
-                        chevron
-                        onClick={() => toast.info('Configure skills in Workspace Settings > AI')}
                      />
                   </SettingsCard>
                </SettingsSection>

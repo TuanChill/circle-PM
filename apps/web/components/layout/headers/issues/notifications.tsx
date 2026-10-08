@@ -11,7 +11,6 @@ export default function Notifications() {
    const [notifications, setNotifications] = useState({
       teamIssueAdded: false,
       issueCompleted: false,
-      issueAddedToTriage: false,
    });
 
    const handleCheckboxChange = (key: keyof typeof notifications) => {
@@ -63,20 +62,6 @@ export default function Notifications() {
                         id="issue-completed"
                         checked={notifications.issueCompleted}
                         onCheckedChange={() => handleCheckboxChange('issueCompleted')}
-                     />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                     <label
-                        htmlFor="issue-triage"
-                        className="text-xs text-muted-foreground cursor-pointer flex-1"
-                     >
-                        An issue is added to the triage queue
-                     </label>
-                     <Checkbox
-                        id="issue-triage"
-                        checked={notifications.issueAddedToTriage}
-                        onCheckedChange={() => handleCheckboxChange('issueAddedToTriage')}
                      />
                   </div>
                </div>

@@ -4,6 +4,12 @@
 > It explains how the project is structured, where every kind of logic lives, how to
 > plug a real API behind the UI, and how to extract a single feature into another project.
 
+> **Temporary product disablement (2026-10-08):** Agent pages and settings are blocked,
+> Agent entry points and integrations are hidden, and the project-service Agent endpoints
+> are unregistered. The issue `triage` workflow category remains supported; only the Triage
+> inbox and notification controls are disabled. The Agent implementation and persisted data
+> remain in place for possible re-enablement.
+
 Circle is a **Linear-inspired project management interface**: issues, projects, teams,
 cycles, members, documents and notifications — built as a **pure front-end template**.
 There is **no backend, no API, no database and no authentication**: every piece of data
@@ -39,7 +45,6 @@ app/                          # Next.js routes (thin wrappers around components)
   page.tsx                    # Redirects to /lndev-ui/team/CORE/all
   [orgId]/                    # Fake multi-tenant segment (always "lndev-ui" in mock data)
     inbox/  projects/  teams/  members/  settings/
-    agent/                                    # Agent chat page (mock, fully client-side)
     issue/[issueId]/                          # Issue detail page (issueId = identifier, e.g. LNUI-703)
     profiles/[memberId]/                      # Member profile (memberId = User.id, e.g. "mason")
     project/[projectId]/
@@ -205,18 +210,16 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   timeline** (`projects-timeline.tsx` — month scale, team groups, date-positioned bars,
   client-only Today marker). `projects-insights-panel.tsx` adds Health/Teams/Leads
   counters; clicking a Health row toggles the corresponding URL filter.
-- **Agent page** (`components/common/agent/agent-chat.tsx` +
-  `components/layout/headers/agent/` + `app/[orgId]/agent/`) — functional mock of a
-  workspace agent: hero screen with example cards, multi-conversation chat
-  (`agent-chat-store`), deterministic canned replies (`mock-data/agent.ts`) streamed
-  word-by-word, light markdown rendering (bold / inline code / lists). No network.
+- **Agent implementation** (`components/common/agent/`, `components/layout/headers/agent/`,
+  `app/[orgId]/agent/`) — source is retained, but its routes return not found and its API
+  module is not registered while the feature is disabled.
 - **Settings** (`components/common/settings/` + `app/[orgId]/settings/`) — Linear-style
   settings area. The app sidebar swaps to a settings nav (`sidebar/nav-settings.tsx`,
   groups Personal / Issues / Projects / Features, plus `nav-teams-settings.tsx`) whenever
   the pathname contains `/settings`. Shared primitives live in `settings/shared.tsx`
   (`SettingsShell`, `SettingsSection`, `SettingsCard`, `SettingsRow`, `SelectMenu`).
   Pages: `notifications`, `code-and-reviews` (with a fake diff preview), `security`,
-  `connected-accounts`, `agent-personalization`, `ai`, `issue-labels` (counts computed
+  `connected-accounts`, `issue-labels` (counts computed
   from `mock-data/issues`), `issue-templates`, `project-statuses` (project counts grouped
   by status category), `teams/[teamId]` (per-team settings incl. danger zone) and
   `teams/new`. Toggles are uncontrolled `ui/switch`; selects are local-state dropdowns.
@@ -289,7 +292,8 @@ Each feature is self-contained under `components/common/<feature>` + its header 
 Routing conventions: URLs are `/{orgId}/…` with `orgId` hard-coded to `lndev-ui` in
 mock nav data, and `teamId` matching `Team.id` (e.g. `CORE`). Detail pages:
 `/{orgId}/issue/{identifier}`, `/{orgId}/profiles/{userId}`,
-`/{orgId}/project/{projectId}/{overview|activity|issues}` and `/{orgId}/agent`.
+`/{orgId}/project/{projectId}/{overview|activity|issues}`. The Agent routes are currently
+disabled and return not found.
 Issue views intentionally show all issues regardless of `teamId` (mock simplification).
 
 ## How to integrate a real API
