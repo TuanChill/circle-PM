@@ -10,6 +10,7 @@ import { Initiative } from './initiative/initiative.entity';
 import { IssueActivity } from './issue/issue-activity.entity';
 import { IssueComment } from './issue/issue-comment.entity';
 import { IssueRelation, PrLink } from './issue/issue-relation.entity';
+import { IssueStatus } from './issue/issue-status.entity';
 import { IssueSubscription } from './issue/issue-subscription.entity';
 import { IssueTemplate } from './issue/issue-template.entity';
 import { Issue } from './issue/issue.entity';
@@ -75,6 +76,7 @@ export const ALL_ENTITIES = [
   CycleCalendarSubscription,
   FileAttachment,
   Issue,
+  IssueStatus,
   IssueSubscription,
   IssueTemplate,
   IssueActivity,

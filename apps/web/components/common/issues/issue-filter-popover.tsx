@@ -13,7 +13,9 @@ import {
 } from '@/components/ui/command';
 import { useFilterStore } from '@/store/filter-store';
 import { issueFilterColumns } from './issue-filter-columns';
-import { status } from '@/lib/workflow-status';
+import { useParams } from 'next/navigation';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import { priorities } from '@/lib/priority-catalog';
 import { useMembers } from '@/hooks/queries/use-members-query';
 import { useLabels } from '@/hooks/queries/use-labels-query';
@@ -45,6 +47,9 @@ export function IssueFilterPopover() {
    const { data: liveLabels = [] } = labelsQuery;
    const failedQuery = [usersQuery, labelsQuery].find((query) => query.isError);
    const activeCount = getActiveFiltersCount();
+   const { teamId } = useParams<{ teamId?: string }>();
+   const { data: statusRecords } = useIssueStatuses(teamId);
+   const status = workflowStatuses(statusRecords);
 
    // Global shortcut 'F' to open filters
    useEffect(() => {

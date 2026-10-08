@@ -42,7 +42,11 @@ export function IssueLine({ issue, layoutId = false }: { issue: Issue; layoutId?
                      </span>
                   )}
                   {displayProperties.status && (
-                     <StatusSelector status={issue.status} issueId={issue.id} />
+                     <StatusSelector
+                        status={issue.status}
+                        issueId={issue.id}
+                        teamId={issue.teamId}
+                     />
                   )}
                </div>
                <Link

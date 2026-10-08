@@ -29,6 +29,7 @@ import {
   IssueComment,
   IssueLabel,
   IssueRelation,
+  IssueStatus,
   IssueSubscription,
   Label,
   LabelGroup,
@@ -44,53 +45,17 @@ import {
   Workspace,
   WorkspaceMember,
 } from '../../data-access';
+import { DEFAULT_ISSUE_STATUSES } from '../issue-statuses/issue-statuses.service';
 import { assertMutuallyExclusiveLabelSelection } from '../labels/label-rules';
 import { isLabelAvailableForTeam } from '../labels/label-scope';
 import { isProjectScopeVisible } from '../projects/project-scope';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 
-const ALL_STATUSES: Record<
-  string,
-  { id: string; name: string; color: string; category: string }
-> = {
-  idea: { id: 'idea', name: 'Idea', color: '#bec2c8', category: 'triage' },
-  backlog: { id: 'backlog', name: 'Backlog', color: '#bec2c8', category: 'backlog' },
-  triage: { id: 'triage', name: 'Triage', color: '#f2994a', category: 'triage' },
-  'to-do': { id: 'to-do', name: 'To Do', color: '#e2e2e2', category: 'unstarted' },
-  'in-progress': {
-    id: 'in-progress',
-    name: 'In Progress',
-    color: '#f2c94c',
-    category: 'started',
-  },
-  done: { id: 'done', name: 'Done', color: '#5e6ad2', category: 'completed' },
-  canceled: { id: 'canceled', name: 'Canceled', color: '#95a2b3', category: 'canceled' },
-  duplicate: {
-    id: 'duplicate',
-    name: 'Duplicate',
-    color: '#6b7280',
-    category: 'canceled',
-  },
-  paused: { id: 'paused', name: 'Paused', color: '#8f9299', category: 'unstarted' },
-  'in-review': {
-    id: 'in-review',
-    name: 'In Review',
-    color: '#26b5ce',
-    category: 'started',
-  },
-  'technical-review': {
-    id: 'technical-review',
-    name: 'Technical Review',
-    color: '#9b51e0',
-    category: 'started',
-  },
-  'product-feedback': {
-    id: 'product-feedback',
-    name: 'Product Feedback',
-    color: '#eb5757',
-    category: 'started',
-  },
-  shipped: { id: 'shipped', name: 'Shipped', color: '#27ae60', category: 'completed' },
+const DUPLICATE_STATUS = {
+  id: 'duplicate',
+  name: 'Duplicate',
+  color: '#95a2b3',
+  category: 'canceled',
 };
 
 const ALL_PRIORITIES: Record<string, { id: string; name: string }> = {
@@ -338,6 +303,49 @@ export class IssuesService {
     };
   }
 
+  private async getWorkflowStatusMaps(teamIds: string[]) {
+    const uniqueTeamIds = [...new Set(teamIds)];
+    const rows = uniqueTeamIds.length
+      ? await this.em.find(
+          IssueStatus,
+          { teamId: { $in: uniqueTeamIds } },
+          { orderBy: { category: 'asc', position: 'asc' } },
+        )
+      : [];
+    const result = new Map<
+      string,
+      Map<string, { id: string; name: string; color: string; category: string }>
+    >();
+    for (const row of rows) {
+      const statuses = result.get(row.teamId) ?? new Map();
+      statuses.set(row.id, {
+        id: row.id,
+        name: row.name,
+        color: row.color,
+        category: row.category,
+      });
+      result.set(row.teamId, statuses);
+    }
+    for (const teamId of uniqueTeamIds) {
+      const statuses =
+        result.get(teamId) ??
+        new Map(
+          DEFAULT_ISSUE_STATUSES.map((status) => [
+            status.id,
+            {
+              id: status.id,
+              name: status.name,
+              color: status.color,
+              category: status.category,
+            },
+          ]),
+        );
+      statuses.set(DUPLICATE_STATUS.id, DUPLICATE_STATUS);
+      result.set(teamId, statuses);
+    }
+    return result;
+  }
+
   private transformIssue(
     issue: Issue,
     membersMap: Map<string, any>,
@@ -354,6 +362,10 @@ export class IssuesService {
       unestimatedAsOne: true,
     },
     teamWorkspaceId?: string,
+    workflowStatuses: Map<
+      string,
+      { id: string; name: string; color: string; category: string }
+    > = new Map(),
   ) {
     const assignee = issue.assigneeId ? (membersMap.get(issue.assigneeId) ?? null) : null;
     const labelIds = issueLabels
@@ -372,7 +384,7 @@ export class IssuesService {
     const subissues =
       subissuesMap.get(issue.id) || subissuesMap.get(issue.identifier) || [];
 
-    const status = ALL_STATUSES[issue.statusId] || {
+    const status = workflowStatuses.get(issue.statusId) || {
       id: issue.statusId,
       name: issue.statusId,
       color: '#e2e2e2',
@@ -650,6 +662,10 @@ export class IssuesService {
       );
     }
 
+    const workflowStatuses = await this.getWorkflowStatusMaps(
+      results.map((issue) => issue.teamId),
+    );
+
     return results.map((issue) =>
       this.transformIssue(
         issue,
@@ -661,6 +677,7 @@ export class IssuesService {
         subscribedIssueIdentifiers,
         estimateSettingsMap.get(issue.teamId),
         teamWorkspaceById.get(issue.teamId),
+        workflowStatuses.get(issue.teamId),
       ),
     );
   }
@@ -953,6 +970,7 @@ export class IssuesService {
         })
       : null;
 
+    const workflowStatuses = await this.getWorkflowStatusMaps([issue.teamId]);
     return this.transformIssue(
       issue,
       membersMap,
@@ -963,6 +981,7 @@ export class IssuesService {
       new Set(subscription ? [issue.identifier] : []),
       this.getEstimateSettings(team ?? undefined),
       team?.workspaceId,
+      workflowStatuses.get(issue.teamId),
     );
   }
 
@@ -1194,11 +1213,13 @@ export class IssuesService {
     }
     if (!team) throw new NotFoundException(`Team ${teamId} not found`);
 
+    const workflowStatuses = await this.getWorkflowStatusMaps([teamId]);
+    const teamStatuses = workflowStatuses.get(teamId)!;
     const createPropertyError = getIssuePropertyValidationError({
       statusId: dto.statusId,
       statusCategory: dto.statusCategory,
       priorityId: dto.priorityId,
-      knownStatuses: ALL_STATUSES,
+      knownStatuses: Object.fromEntries(teamStatuses),
       knownPriorities: ALL_PRIORITIES,
     });
     if (createPropertyError) throw new BadRequestException(createPropertyError);
@@ -1265,10 +1286,11 @@ export class IssuesService {
       }
     }
 
+    const defaultStatusId =
+      (await this.em.findOne(IssueStatus, { teamId, isDefault: true }))?.id || 'to-do';
+    const statusId = dto.statusId || defaultStatusId;
     const statusCategory =
-      dto.statusCategory ||
-      ALL_STATUSES[dto.statusId || 'to-do']?.category ||
-      'unstarted';
+      dto.statusCategory || teamStatuses.get(statusId)?.category || 'unstarted';
 
     const id = v7();
     const issue = new Issue({
@@ -1277,7 +1299,7 @@ export class IssuesService {
       title: dto.title,
       description: dto.description || '',
       descriptionBlocks: dto.descriptionBlocks || [],
-      statusId: dto.statusId || 'to-do',
+      statusId,
       statusCategory,
       priorityId: dto.priorityId || 'no-priority',
       estimate: dto.estimate ?? undefined,
@@ -1337,11 +1359,14 @@ export class IssuesService {
       `Issue ${identifierOrId} not found`,
     );
 
+    const nextTeamId = dto.teamId ?? issue.teamId;
+    const workflowStatuses = await this.getWorkflowStatusMaps([nextTeamId]);
+    const teamStatuses = workflowStatuses.get(nextTeamId)!;
     const updatePropertyError = getIssuePropertyValidationError({
       statusId: dto.statusId,
       statusCategory: dto.statusCategory,
       priorityId: dto.priorityId,
-      knownStatuses: ALL_STATUSES,
+      knownStatuses: Object.fromEntries(teamStatuses),
       knownPriorities: ALL_PRIORITIES,
     });
     if (updatePropertyError) throw new BadRequestException(updatePropertyError);
@@ -1355,7 +1380,6 @@ export class IssuesService {
       return actorName;
     };
 
-    const nextTeamId = dto.teamId ?? issue.teamId;
     const nextTeam = await this.em.findOne(Team, { id: nextTeamId });
     if (!nextTeam) throw new NotFoundException(`Team ${nextTeamId} not found`);
     await this.validateAssigneeId(
@@ -1467,11 +1491,11 @@ export class IssuesService {
       issue.statusId = dto.statusId;
       issue.statusCategory =
         dto.statusCategory ||
-        ALL_STATUSES[dto.statusId]?.category ||
+        teamStatuses.get(dto.statusId)?.category ||
         issue.statusCategory;
 
       if (oldStatus !== dto.statusId) {
-        const statusName = ALL_STATUSES[dto.statusId]?.name || dto.statusId;
+        const statusName = teamStatuses.get(dto.statusId)?.name || dto.statusId;
         const act = new IssueActivity({
           issueIdentifier: issue.identifier,
           actorId,

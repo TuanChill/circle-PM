@@ -16,7 +16,7 @@ import { useTeams } from '@/hooks/queries/use-teams-query';
 import { useProjects } from '@/hooks/queries/use-projects-query';
 import { useIssues } from '@/hooks/queries/use-issues-query';
 import { memberStatusColors } from '@/lib/member-status';
-import { displayOrderedStatus } from '@/lib/workflow-status';
+import { mergeWorkflowStatuses } from '@/lib/issue-statuses';
 import { useFilterStore } from '@/store/filter-store';
 import { usePresenceStore } from '@/store/presence-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
@@ -140,6 +140,10 @@ export default function MemberProfile({ member }: { member: Member }) {
       () => applyIssueFilters(scopedIssues, filters),
       [scopedIssues, filters]
    );
+   const statuses = useMemo(
+      () => mergeWorkflowStatuses(scopedIssues.map((issue) => issue.status)),
+      [scopedIssues]
+   );
 
    const memberTeams = useMemo(
       () => teams.filter((team) => (member.teamIds ?? []).includes(team.id)),
@@ -248,14 +252,14 @@ export default function MemberProfile({ member }: { member: Member }) {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={scopedIssues}
-                  statuses={displayOrderedStatus}
+                  statuses={statuses}
                   isViewTypeGrid={isViewTypeGrid}
                />
             </div>
 
             {openPanel === 'insights' && (
                <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
-                  <InsightsPanel issues={displayedIssues} />
+                  <InsightsPanel issues={displayedIssues} statuses={statuses} />
                </aside>
             )}
 

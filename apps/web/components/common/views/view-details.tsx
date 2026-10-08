@@ -5,7 +5,7 @@ import { InsightsPanel } from '@/components/common/issues/insights-panel';
 import { applyIssueFilters } from '@/components/common/issues/issue-filter-columns';
 import ProjectsList from '@/components/common/projects/projects-list';
 import { ProjectGroup } from '@/components/common/projects/projects';
-import { status as allStatus } from '@/lib/workflow-status';
+import { mergeWorkflowStatuses } from '@/lib/issue-statuses';
 import { filterIssuesForView, filterProjectsForView } from '@/lib/view-filters';
 import type { CustomViewFilter, View } from '@/services/views.service';
 import { useAuthStore } from '@/store/auth-store';
@@ -62,6 +62,10 @@ function IssueViewBody({ view }: { view: View }) {
       const scoped = filterIssuesForView(view, allIssues, currentUserId);
       return Array.isArray(filter.filters) ? applyIssueFilters(scoped, filter.filters) : scoped;
    }, [view, allIssues, currentUserId, filter.filters]);
+   const allStatus = useMemo(
+      () => mergeWorkflowStatuses(issues.map((issue) => issue.status)),
+      [issues]
+   );
    if (isError) {
       return <QueryErrorState subject="issues for this view" error={error} onRetry={refetch} />;
    }

@@ -18,7 +18,7 @@ import { cycleStatusLabel } from '@/lib/cycle-utils';
 import type { Cycle } from '@/services/cycles.service';
 import type { Issue } from '@/mock-data/issues';
 import { priorities } from '@/lib/priority-catalog';
-import { status, StatusCategory } from '@/lib/workflow-status';
+import { status, Status, StatusCategory } from '@/lib/workflow-status';
 import type { Project } from '@/mock-data/projects';
 import { renderProjectIcon } from '@/lib/project-utils';
 import type { Member } from '@/services/members.service';
@@ -40,11 +40,12 @@ import {
 /*                                Option lists                                */
 /* -------------------------------------------------------------------------- */
 
-const statusOptions: ColumnOption[] = status.map((item) => ({
-   value: item.id,
-   label: item.name,
-   icon: <item.icon />,
-}));
+const statusOptionsFor = (statuses: Status[]) =>
+   statuses.map((item) => ({
+      value: item.id,
+      label: item.name,
+      icon: <item.icon />,
+   }));
 
 const STATUS_TYPES: { id: StatusCategory; name: string }[] = [
    { id: 'triage', name: 'Triage' },
@@ -141,7 +142,8 @@ export function buildIssueFilterColumns(
    members: Member[] = [],
    projects: Project[] = [],
    cycles: Cycle[] = [],
-   labels: LabelItem[] = []
+   labels: LabelItem[] = [],
+   statuses: Status[] = status
 ) {
    return [
       dtf
@@ -164,7 +166,7 @@ export function buildIssueFilterColumns(
          .accessor((issue: Issue) => issue.status.id)
          .displayName('Status')
          .icon(CircleCheck)
-         .options(statusOptions)
+         .options(statusOptionsFor(statuses))
          .build(),
       dtf
          .option()

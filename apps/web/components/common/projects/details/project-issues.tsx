@@ -3,7 +3,7 @@
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
 import { applyIssueFilters } from '@/components/common/issues/issue-filter-columns';
 import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
-import { workflowOrderedStatus } from '@/lib/workflow-status';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import { useFilterStore } from '@/store/filter-store';
 import { useMemo, useEffect } from 'react';
 import { ProjectSidePanel } from './project-side-panel';
@@ -44,6 +44,7 @@ import { useViewStore } from '@/store/view-store';
 import { useDisplaySettingsStore } from '@/store/display-settings-store';
 import { useSearchParams } from 'next/navigation';
 import QueryErrorState from '@/components/common/query-error-state';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
 
 /** Project "Issues" tab: the project's issues grouped by status. */
 export default function ProjectIssues({ projectId }: ProjectIssuesProps) {
@@ -57,6 +58,8 @@ export default function ProjectIssues({ projectId }: ProjectIssuesProps) {
       error: projectQueryError,
       refetch: refetchProject,
    } = useProject(projectId);
+   const { data: statusRecords } = useIssueStatuses(project?.teamId);
+   const statuses = workflowStatuses(statusRecords);
    const {
       data: detail,
       isLoading: detailLoading,
@@ -177,7 +180,7 @@ export default function ProjectIssues({ projectId }: ProjectIssuesProps) {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={issues}
-                  statuses={workflowOrderedStatus}
+                  statuses={statuses}
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="Add issues to the project"
                   emptyStateSubtitle="Start building your project by creating an issue."

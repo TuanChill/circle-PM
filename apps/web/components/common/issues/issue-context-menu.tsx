@@ -39,7 +39,8 @@ import {
 import React, { useState } from 'react';
 import { useIssuesStore } from '@/store/issues-store';
 import type { Issue } from '@/mock-data/issues';
-import { status } from '@/lib/workflow-status';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import { priorities } from '@/lib/priority-catalog';
 import { useMembers } from '@/hooks/queries/use-members-query';
 import { useLabels } from '@/hooks/queries/use-labels-query';
@@ -67,13 +68,19 @@ export function IssueContextMenu({ issue }: IssueContextMenuProps) {
    const labelsQuery = useLabels('issue');
    const projectsQuery = useProjects();
    const cyclesQuery = useCycles(issue?.teamId, { requireTeamId: true });
+   const issueStatusesQuery = useIssueStatuses(issue?.teamId);
+   const status = workflowStatuses(issueStatusesQuery.data);
    const { data: members = [] } = membersQuery;
    const { data: labels = [] } = labelsQuery;
    const { data: projects = [] } = projectsQuery;
    const { data: cycles = [] } = cyclesQuery;
-   const failedQuery = [membersQuery, labelsQuery, projectsQuery, cyclesQuery].find(
-      (query) => query.isError
-   );
+   const failedQuery = [
+      membersQuery,
+      labelsQuery,
+      projectsQuery,
+      cyclesQuery,
+      issueStatusesQuery,
+   ].find((query) => query.isError);
    const deleteIssueMutation = useDeleteIssue();
    const subscriptionMutation = useToggleIssueSubscription();
    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

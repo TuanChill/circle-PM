@@ -1,4 +1,5 @@
 export * from './issue.entity';
+export * from './issue-status.entity';
 export * from './issue-subscription.entity';
 export * from './issue-template.entity';
 export * from './issue-activity.entity';

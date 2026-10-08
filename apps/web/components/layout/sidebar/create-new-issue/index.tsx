@@ -287,9 +287,7 @@ export function CreateNewIssue() {
             }
          }}
       >
-         <DialogContent
-            className="w-full sm:max-w-[750px] p-0 shadow-xl"
-         >
+         <DialogContent className="w-full sm:max-w-[750px] p-0 shadow-xl">
             <DialogHeader>
                <DialogTitle>
                   <div className="flex items-center px-4 pt-4 gap-2">
@@ -351,6 +349,7 @@ export function CreateNewIssue() {
                <div className="w-full flex items-center justify-start gap-1.5 flex-wrap">
                   <StatusSelector
                      status={addIssueForm.status}
+                     teamId={activeTeamId}
                      onOpenChange={handlePickerOpenChange}
                      onInteractionStart={handlePickerInteractionStart}
                      onChange={(newStatus) =>

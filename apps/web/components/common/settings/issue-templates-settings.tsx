@@ -45,14 +45,14 @@ import { useProjectDetail, useProjects } from '@/hooks/queries/use-projects-quer
 import { useCycles } from '@/hooks/queries/use-cycles-query';
 import { useIssues } from '@/hooks/queries/use-issues-query';
 import { priorities } from '@/lib/priority-catalog';
-import { status } from '@/lib/workflow-status';
+import { status as defaultStatuses } from '@/lib/workflow-status';
+import { workflowStatuses } from '@/lib/issue-statuses';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
 import type { Project } from '@/services/projects.service';
 import type { Cycle } from '@/services/cycles.service';
 import type { CreateIssueTemplatePayload, IssueTemplate } from '@/services/issue-templates.service';
 import { useParams } from 'next/navigation';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-
-const categoryFor = (id: string) => status.find((item) => item.id === id)?.category ?? 'unstarted';
 
 type EditorProps = {
    open: boolean;
@@ -92,6 +92,8 @@ function TemplateEditor({
    const [parentIssueId, setParentIssueId] = useState('');
    const [milestone, setMilestone] = useState('');
    const [statusId, setStatusId] = useState('to-do');
+   const { data: statusRecords } = useIssueStatuses(teamId || undefined);
+   const statuses = workflowStatuses(statusRecords);
    const [priorityId, setPriorityId] = useState('no-priority');
    const [estimate, setEstimate] = useState('');
    const [assigneeId, setAssigneeId] = useState('none');
@@ -165,7 +167,7 @@ function TemplateEditor({
                ? markdownToContentBlocks(issueDescription)
                : undefined,
             statusId,
-            statusCategory: categoryFor(statusId),
+            statusCategory: statuses.find((item) => item.id === statusId)?.category ?? 'unstarted',
             priorityId,
             estimate: estimate === '' ? undefined : Number(estimate),
             assigneeId: assigneeId === 'none' ? undefined : assigneeId,
@@ -416,7 +418,7 @@ function TemplateEditor({
                            <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                           {status.map((item) => (
+                           {(teamId ? statuses : defaultStatuses).map((item) => (
                               <SelectItem key={item.id} value={item.id}>
                                  {item.name}
                               </SelectItem>

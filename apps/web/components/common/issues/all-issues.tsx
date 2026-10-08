@@ -1,11 +1,7 @@
 'use client';
 
 import type { Issue } from '@/mock-data/issues';
-import {
-   getStatusesByCategory,
-   StatusCategory,
-   workflowOrderedStatus,
-} from '@/lib/workflow-status';
+import { StatusCategory, workflowOrderedStatus } from '@/lib/workflow-status';
 import { useFilterStore } from '@/store/filter-store';
 import { applyIssueFilters } from './issue-filter-columns';
 import { IssueFilterBar } from './issue-filter-bar';
@@ -21,6 +17,8 @@ import { SearchIssues } from './search-issues';
 
 import { useIssues } from '@/hooks/queries/use-issues-query';
 import { useViews } from '@/hooks/queries/use-views-query';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import QueryErrorState from '@/components/common/query-error-state';
 
 interface AllIssuesProps {
@@ -40,6 +38,7 @@ export default function AllIssues({ categories }: AllIssuesProps) {
    const { filters, setFilters } = useFilterStore();
    const { setDisplaySettings } = useDisplaySettingsStore();
    const { data: serverIssues = [], isError, error, refetch } = useIssues();
+   const { data: statusRecords } = useIssueStatuses(teamId);
    const { openPanel } = useRightPanelStore();
    const {
       data: views = [],
@@ -74,10 +73,18 @@ export default function AllIssues({ categories }: AllIssuesProps) {
    const isSearching = isSearchOpen && searchQuery.trim() !== '';
    const isViewTypeGrid = viewType === 'grid';
 
-   const statuses = useMemo(
-      () => (categories ? getStatusesByCategory(categories) : workflowOrderedStatus),
-      [categories]
-   );
+   const statuses = useMemo(() => {
+      const teamStatuses = workflowStatuses(statusRecords);
+      return (
+         categories
+            ? teamStatuses.filter((item) => categories.includes(item.category))
+            : teamStatuses
+      ).sort(
+         (a, b) =>
+            workflowOrderedStatus.findIndex((s) => s.category === a.category) -
+            workflowOrderedStatus.findIndex((s) => s.category === b.category)
+      );
+   }, [categories, statusRecords]);
 
    const scopedIssues = useMemo<Issue[]>(
       () =>
@@ -126,7 +133,7 @@ export default function AllIssues({ categories }: AllIssuesProps) {
 
             {openPanel === 'insights' && (
                <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
-                  <InsightsPanel issues={displayedIssues} />
+                  <InsightsPanel issues={displayedIssues} statuses={statuses} />
                </aside>
             )}
          </div>

@@ -11,12 +11,15 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useIssuesStore } from '@/store/issues-store';
-import { status as allStatus, Status } from '@/lib/workflow-status';
+import { Status } from '@/lib/workflow-status';
 import { CheckIcon } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 
 interface StatusSelectorProps {
    status: Status;
+   teamId?: string;
    onOpenChange?: (open: boolean) => void;
    onInteractionStart?: () => void;
    onChange: (status: Status) => void;
@@ -24,6 +27,7 @@ interface StatusSelectorProps {
 
 export function StatusSelector({
    status,
+   teamId,
    onOpenChange,
    onInteractionStart,
    onChange,
@@ -33,6 +37,8 @@ export function StatusSelector({
    const [value, setValue] = useState<string>(status.id);
 
    const { filterByStatus } = useIssuesStore();
+   const { data: statusRecords } = useIssueStatuses(teamId);
+   const allStatus = workflowStatuses(statusRecords);
 
    useEffect(() => {
       setValue(status.id);

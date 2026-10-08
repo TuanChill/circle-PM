@@ -68,7 +68,7 @@ export default function IssuePreview({ notification, onMarkAsRead }: IssuePrevie
          {/* Header */}
          <div className="flex items-center justify-between px-4 h-10 border-b border-border shrink-0">
             <div className="flex items-center gap-2 min-w-0">
-               {renderStatusIcon(displayIssue.status?.id)}
+               {renderStatusIcon(displayIssue.status?.id, displayIssue.status)}
                <span className="text-sm font-medium truncate">{displayIssue.identifier}</span>
             </div>
 
@@ -128,7 +128,7 @@ export default function IssuePreview({ notification, onMarkAsRead }: IssuePrevie
                   {/* Properties row */}
                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm xl:hidden">
                      <span className="flex items-center gap-1.5">
-                        {renderStatusIcon(displayIssue.status?.id)}
+                        {renderStatusIcon(displayIssue.status?.id, displayIssue.status)}
                         {displayIssue.status?.name}
                      </span>
                      <span className="flex items-center gap-1.5 text-muted-foreground">

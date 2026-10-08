@@ -12,7 +12,8 @@ import {
 import { formatCycleDateRange } from '@/lib/cycle-utils';
 import type { Issue } from '@/mock-data/issues';
 import { priorities } from '@/lib/priority-catalog';
-import { status as allStatus } from '@/lib/workflow-status';
+import { workflowStatuses } from '@/lib/issue-statuses';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
 import type { User } from '@/mock-data/users';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCreateIssueStore } from '@/store/create-issue-store';
@@ -148,6 +149,8 @@ export function CommandPalette() {
    }, [pathname, issues]);
 
    const issue = contextCleared ? undefined : contextIssue;
+   const { data: issueStatusRecords } = useIssueStatuses(issue?.teamId);
+   const allStatus = workflowStatuses(issueStatusRecords);
 
    const updateIssueStatus = (issueId: string, status: { id: string }) => {
       const target = issues.find((i) => i.id === issueId || i.identifier === issueId) || issue;

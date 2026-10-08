@@ -17,6 +17,7 @@ import {
   canManageTeamRole,
   canManageWorkspaceRole,
 } from '../access-control';
+import { IssueStatusesService } from '../issue-statuses/issue-statuses.service';
 import { requireExplicitWorkspaceId } from '../workspaces/workspace-selection';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 
@@ -39,6 +40,7 @@ export class TeamsService {
   constructor(
     private readonly em: EntityManager,
     private readonly workspacesService: WorkspacesService,
+    private readonly issueStatusesService?: IssueStatusesService,
   ) {}
 
   private async assertTeamAccess(
@@ -305,6 +307,7 @@ export class TeamsService {
     }
 
     await this.em.flush();
+    await this.issueStatusesService?.ensureDefaults(team.id);
     return this.findOne(team.id, currentMemberId);
   }
 

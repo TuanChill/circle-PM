@@ -2,7 +2,8 @@
 
 import { CycleDetailsPanel } from '@/components/common/cycles/cycle-details-panel';
 import { useCycles } from '@/hooks/queries/use-cycles-query';
-import { workflowOrderedStatus } from '@/lib/workflow-status';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import { useFilterStore } from '@/store/filter-store';
 import { applyIssueFilters } from './issue-filter-columns';
 import { IssueFilterBar } from './issue-filter-bar';
@@ -33,6 +34,8 @@ export default function CycleIssues({ cycleView }: CycleIssuesProps) {
    const { teamId } = useParams<{ teamId: string }>();
    const { isSearchOpen, searchQuery } = useSearchStore();
    const { viewType } = useViewStore();
+   const { data: statusRecords } = useIssueStatuses(teamId);
+   const statuses = workflowStatuses(statusRecords);
    const { filters } = useFilterStore();
    const {
       data: serverIssues = [],
@@ -105,7 +108,7 @@ export default function CycleIssues({ cycleView }: CycleIssuesProps) {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={cycleIssues}
-                  statuses={workflowOrderedStatus}
+                  statuses={statuses}
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="No issues in this cycle"
                   emptyStateSubtitle="Plan and organize issues to deliver in this cycle."
@@ -115,7 +118,7 @@ export default function CycleIssues({ cycleView }: CycleIssuesProps) {
 
             {openPanel === 'insights' && (
                <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
-                  <InsightsPanel issues={displayedIssues} />
+                  <InsightsPanel issues={displayedIssues} statuses={statuses} />
                </aside>
             )}
             {openPanel === 'cycle-details' && (

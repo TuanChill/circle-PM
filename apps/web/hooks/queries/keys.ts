@@ -15,6 +15,11 @@ export const issueKeys = {
    archived: (teamId?: string) => [...issueKeys.all, 'archived', teamId ?? 'all'] as const,
 };
 
+export const issueStatusKeys = {
+   all: ['issue-statuses'] as const,
+   list: (teamId?: string) => [...issueStatusKeys.all, { teamId }] as const,
+};
+
 export const projectKeys = {
    all: ['projects'] as const,
    lists: () => [...projectKeys.all, 'list'] as const,

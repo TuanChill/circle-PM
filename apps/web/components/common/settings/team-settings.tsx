@@ -31,7 +31,6 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { status } from '@/lib/workflow-status';
 import {
    Bot,
    ChevronRight,
@@ -342,11 +341,11 @@ export default function TeamSettings({ teamId }: TeamSettingsProps) {
                      <SettingsRow
                         icon={<Target className="size-4" />}
                         title="Issue statuses"
-                        description="Customize the statuses issues go through"
-                        trailing={<span>{status.length} statuses</span>}
+                        description="Customize this team’s issue workflow"
+                        trailing={<span>Manage workflow</span>}
                         chevron
                         onClick={() =>
-                           toast.info('Issue statuses are managed by the workspace workflow')
+                           router.push(`/${orgId}/settings/teams/${team.id}/issue-statuses`)
                         }
                      />
                      <SettingsRow

@@ -33,10 +33,12 @@ export function IssueFilterBar({ issues }: { issues: Issue[] }) {
    const { data: cycles = [] } = cyclesQuery;
    const { data: labels = [] } = labelsQuery;
 
-   const columnsConfig = useMemo(
-      () => buildIssueFilterColumns(members, projects, cycles, labels),
-      [members, projects, cycles, labels]
-   );
+   const columnsConfig = useMemo(() => {
+      const statuses = [
+         ...new Map(issues.map((issue) => [issue.status.id, issue.status])).values(),
+      ];
+      return buildIssueFilterColumns(members, projects, cycles, labels, statuses);
+   }, [members, projects, cycles, labels, issues]);
 
    const { columns, actions, strategy } = useDataTableFilters({
       strategy: 'client',

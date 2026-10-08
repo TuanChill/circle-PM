@@ -119,7 +119,7 @@ function IssueRef({ identifier, note }: { identifier: string; note?: string }) {
                href={`/${orgId ?? ''}/issue/${identifier}`}
                className="inline-flex items-center gap-1.5 bg-accent/60 rounded px-1.5 py-0.5 hover:bg-accent"
             >
-               {issue && renderStatusIcon(issue.status?.id)}
+               {issue && renderStatusIcon(issue.status?.id, issue.status)}
                <span className="text-muted-foreground font-medium">{identifier}</span>
                {issue && <span className="truncate max-w-72">{issue.title}</span>}
             </Link>
@@ -313,7 +313,7 @@ export function IssueRefRow({ identifier }: { identifier: string }) {
          href={`/${orgId ?? ''}/issue/${identifier}`}
          className="flex items-center gap-2 py-1 text-sm hover:bg-sidebar/50 rounded px-1.5 -mx-1.5 min-w-0"
       >
-         {renderStatusIcon(issue.status?.id)}
+         {renderStatusIcon(issue.status?.id, issue.status)}
          <span className="truncate">{issue.title}</span>
       </Link>
    );

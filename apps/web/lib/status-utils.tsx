@@ -1,8 +1,14 @@
 import React from 'react';
-import { status as allStatus } from '@/lib/workflow-status';
+import { Status, status as allStatus } from '@/lib/workflow-status';
 
-export function renderStatusIcon(statusId: string): React.ReactElement | null {
-   const selectedItem = allStatus.find((item) => item.id === statusId);
+export function renderStatusIcon(
+   statusId: string,
+   dynamicStatus?: Status
+): React.ReactElement | null {
+   const selectedItem =
+      dynamicStatus?.id === statusId
+         ? dynamicStatus
+         : allStatus.find((item) => item.id === statusId);
    if (selectedItem) {
       const Icon = selectedItem.icon;
       return <Icon />;

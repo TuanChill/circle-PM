@@ -11,7 +11,8 @@ import {
 } from '@/hooks/queries/use-issues-query';
 import { useMembers } from '@/hooks/queries/use-members-query';
 import { useLabels } from '@/hooks/queries/use-labels-query';
-import { status as allStatuses } from '@/lib/workflow-status';
+import { useIssueStatuses } from '@/hooks/queries/use-issue-statuses-query';
+import { workflowStatuses } from '@/lib/issue-statuses';
 import { priorities } from '@/lib/priority-catalog';
 import { renderPriorityIcon } from '@/lib/priority-utils';
 import {
@@ -124,6 +125,8 @@ export default function IssueDetails() {
       error: issueError,
       refetch: refetchIssue,
    } = useIssue(issueId);
+   const { data: issueStatusRecords } = useIssueStatuses(issue?.teamId);
+   const allStatuses = workflowStatuses(issueStatusRecords);
    const {
       data: detailData,
       isLoading: isDetailLoading,
@@ -395,7 +398,7 @@ export default function IssueDetails() {
                                  href={`/${orgId ?? ''}/issue/${subIssue.identifier}`}
                                  className="flex items-center gap-2.5 h-10 px-1 border-b border-border/50 hover:bg-sidebar/50 text-sm min-w-0 group transition-colors"
                               >
-                                 {renderStatusIcon(subIssue.status?.id)}
+                                 {renderStatusIcon(subIssue.status?.id, subIssue.status)}
                                  <span className="text-muted-foreground shrink-0 text-xs font-medium group-hover:text-foreground transition-colors">
                                     {subIssue.identifier}
                                  </span>
@@ -430,7 +433,10 @@ export default function IssueDetails() {
                                     className="p-1 rounded hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors shrink-0"
                                     title="Select status"
                                  >
-                                    {renderStatusIcon(subIssueStatusId)}
+                                    {renderStatusIcon(
+                                       subIssueStatusId,
+                                       allStatuses.find((item) => item.id === subIssueStatusId)
+                                    )}
                                  </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-44">
@@ -439,7 +445,7 @@ export default function IssueDetails() {
                                        key={st.id}
                                        onClick={() => setSubIssueStatusId(st.id)}
                                     >
-                                       {renderStatusIcon(st.id)}
+                                       {renderStatusIcon(st.id, st)}
                                        <span className="ml-2 text-xs">{st.name}</span>
                                     </DropdownMenuItem>
                                  ))}

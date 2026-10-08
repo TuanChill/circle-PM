@@ -6,7 +6,7 @@ import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-vie
 import { InsightsPanel } from '@/components/common/issues/insights-panel';
 import { SearchIssues } from '@/components/common/issues/search-issues';
 import { BreakdownPanel } from './breakdown-panel';
-import { displayOrderedStatus } from '@/lib/workflow-status';
+import { mergeWorkflowStatuses } from '@/lib/issue-statuses';
 import { useFilterStore } from '@/store/filter-store';
 import { useAuthStore } from '@/store/auth-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
@@ -44,6 +44,10 @@ export default function MyIssues() {
       () => applyIssueFilters(scopedIssues, filters),
       [scopedIssues, filters]
    );
+   const statuses = useMemo(
+      () => mergeWorkflowStatuses(scopedIssues.map((issue) => issue.status)),
+      [scopedIssues]
+   );
 
    if (isError) {
       return <QueryErrorState subject="your issues" error={error} onRetry={refetch} />;
@@ -67,7 +71,7 @@ export default function MyIssues() {
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={scopedIssues}
-                  statuses={displayOrderedStatus}
+                  statuses={statuses}
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="No issues assigned to you"
                   emptyStateSubtitle="Issues assigned to you across teams will show up here."
@@ -77,7 +81,7 @@ export default function MyIssues() {
 
             {openPanel === 'insights' && (
                <aside className="hidden lg:flex w-[420px] shrink-0 border-l h-full overflow-hidden bg-container">
-                  <InsightsPanel issues={displayedIssues} />
+                  <InsightsPanel issues={displayedIssues} statuses={statuses} />
                </aside>
             )}
             {openPanel === 'breakdown' && (

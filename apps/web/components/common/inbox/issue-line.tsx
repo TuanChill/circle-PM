@@ -103,7 +103,9 @@ export default function IssueLine({
                   </h4>
 
                   {showStatusIcon && (
-                     <div className="shrink-0">{renderStatusIcon(notification.status.id)}</div>
+                     <div className="shrink-0">
+                        {renderStatusIcon(notification.status.id, notification.status)}
+                     </div>
                   )}
                   {onSnooze && (
                      <DropdownMenu>

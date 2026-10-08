@@ -2,7 +2,7 @@ import { LexoRank } from '@/lib/utils';
 import { LabelInterface, labels } from './labels';
 import { Priority, priorities } from '@/lib/priority-catalog';
 import { Project, projects } from './projects';
-import { Status, status, StatusCategory } from '@/lib/workflow-status';
+import { Status, historicalStatus, StatusCategory } from '@/lib/workflow-status';
 import { User, users } from './users';
 
 export interface Issue {
@@ -44,7 +44,7 @@ export interface Issue {
 /* -------------------------------------------------------------------------- */
 
 const statusById = (id: string): Status => {
-   const found = status.find((s) => s.id === id);
+   const found = historicalStatus.find((s) => s.id === id);
    if (!found) throw new Error(`Unknown status id: ${id}`);
    return found;
 };

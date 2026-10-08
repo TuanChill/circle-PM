@@ -24,7 +24,7 @@ A high-performance, monorepo microservices platform built with NestJS, optimized
   * [⚙️ Microservices](#-microservices)
   * [🧰 Tools & Management UI](#-tools--management-ui)
 * [🗄️ Production database access](#-production-database-access)
-* [📊 Workspace project statuses](./docs/project-statuses.md)
+* [📊 Project statuses and team issue workflows](./docs/project-statuses.md)
 * [🔐 Demo API — Sign-Up & Login (cURL)](#-demo-api--sign-up--login-curl)
   * [Sign-Up](#sign-up)
   * [Login](#login)

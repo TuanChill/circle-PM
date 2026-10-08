@@ -50,7 +50,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
          <Section title="Properties">
             <div className="flex flex-col gap-1.5">
                <div className="flex items-center gap-1.5 -ml-1.5">
-                  <StatusSelector status={issue.status} issueId={issue.id} />
+                  <StatusSelector status={issue.status} issueId={issue.id} teamId={issue.teamId} />
                   <span className="text-sm">{issue.status.name}</span>
                </div>
                <div className="flex items-center gap-1.5 -ml-1.5">

@@ -2,6 +2,13 @@ import { apiClient } from './api-client';
 import type { Issue } from '@/mock-data/issues';
 import type { ContentBlock, IssueDetail } from '@/mock-data/issue-details';
 import type { ArchivedIssue } from '@/lib/api/issues';
+import { toWorkflowStatus } from '@/lib/issue-statuses';
+import type { IssueStatusRecord } from '@/services/issue-statuses.service';
+
+const normalizeIssue = (issue: Issue): Issue => ({
+   ...issue,
+   status: toWorkflowStatus(issue.status as unknown as IssueStatusRecord),
+});
 
 export interface IssueFilterParams {
    workspaceId?: string;
@@ -75,9 +82,10 @@ export interface UpdateIssuePayload {
 
 export const issuesService = {
    async getIssues(params?: IssueFilterParams): Promise<Issue[]> {
-      return apiClient<Issue[]>('/issues', {
+      const issues = await apiClient<Issue[]>('/issues', {
          params: params as Record<string, string | string[] | undefined>,
       });
+      return issues.map(normalizeIssue);
    },
 
    async getArchivedIssues(teamId?: string): Promise<ArchivedIssue[]> {
@@ -93,7 +101,9 @@ export const issuesService = {
    },
 
    async getIssueById(identifier: string, workspaceId?: string): Promise<Issue> {
-      return apiClient<Issue>(`/issues/${identifier}`, { params: { workspaceId } });
+      return normalizeIssue(
+         await apiClient<Issue>(`/issues/${identifier}`, { params: { workspaceId } })
+      );
    },
 
    async getIssueDetail(identifier: string, workspaceId?: string): Promise<IssueDetail> {
@@ -103,17 +113,21 @@ export const issuesService = {
    },
 
    async createIssue(data: CreateIssuePayload): Promise<Issue> {
-      return apiClient<Issue>('/issues', {
-         method: 'POST',
-         body: JSON.stringify(data),
-      });
+      return normalizeIssue(
+         await apiClient<Issue>('/issues', {
+            method: 'POST',
+            body: JSON.stringify(data),
+         })
+      );
    },
 
    async updateIssue(identifier: string, data: UpdateIssuePayload): Promise<Issue> {
-      return apiClient<Issue>(`/issues/${identifier}`, {
-         method: 'PATCH',
-         body: JSON.stringify(data),
-      });
+      return normalizeIssue(
+         await apiClient<Issue>(`/issues/${identifier}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+         })
+      );
    },
 
    async updateIssueRank(identifier: string, rank: string): Promise<{ success: boolean }> {
@@ -130,7 +144,9 @@ export const issuesService = {
    },
 
    async restoreIssue(identifier: string): Promise<Issue> {
-      return apiClient<Issue>(`/issues/${identifier}/restore`, { method: 'POST' });
+      return normalizeIssue(
+         await apiClient<Issue>(`/issues/${identifier}/restore`, { method: 'POST' })
+      );
    },
 
    async getSubscription(identifier: string): Promise<{ identifier: string; subscribed: boolean }> {

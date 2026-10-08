@@ -144,7 +144,7 @@ export const DuplicateIcon: React.FC = () => <StatusDuplicateIcon color="#95a2b3
  * status list (in-progress, technical-review, done, paused, to-do, backlog)
  * so mock data referencing `status[0..5]` keeps working.
  */
-export const status: Status[] = [
+export const historicalStatus: Status[] = [
    {
       id: 'in-review',
       name: 'In Review',
@@ -190,6 +190,11 @@ export const status: Status[] = [
    },
 ];
 
+/** Default statuses offered for new issue workflows. Teams can add more. */
+export const status: Status[] = historicalStatus.filter((item) =>
+   ['backlog', 'to-do', 'in-progress', 'done', 'canceled', 'duplicate'].includes(item.id)
+);
+
 /**
  * Workflow ordering (triage → backlog → unstarted → started → completed → canceled),
  * used by the insights table.
@@ -230,7 +235,7 @@ export const displayOrderedStatus: Status[] = [...status].sort(
  * STATUS_DATA). Unlike Issues, whose statuses are the full customizable
  * team workflow above, Projects use a small fixed lifecycle.
  */
-export const projectStatus: Status[] = status.filter((s) =>
+export const projectStatus: Status[] = historicalStatus.filter((s) =>
    ['backlog', 'in-progress', 'done', 'paused', 'canceled'].includes(s.id)
 );
 
