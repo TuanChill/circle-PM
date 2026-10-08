@@ -28,7 +28,7 @@ Make AI Agent and Triage-specific product entry points unavailable throughout th
 - Remove the Ask Agent command-palette shortcut and all workspace/team settings entry points for Agent functionality.
 - Remove the dedicated Agents integration marketplace category and its Agent-specific entries. Keep AI client integrations and unrelated integrations.
 - Unregister `AgentModule` from the project-service application so the Agent endpoints return not found while disabled.
-- Remove the Triage inbox/settings control and the Triage queue notification setting.
+- Remove the Triage inbox/settings control, the Triage group from team issue-status settings, and the Triage queue notification setting.
 - Remove the AI Agent marketing badge and feature card.
 
 ### Compatibility and Non-functional
@@ -51,6 +51,7 @@ Disable access at the owning registration points: block the Next.js routes, remo
 - `apps/web/app/[orgId]/settings/agent-personalization/page.tsx`
 - `apps/web/components/layout/command-palette.tsx`
 - `apps/web/components/common/settings/team-settings.tsx`
+- `apps/web/components/common/settings/team-issue-statuses-settings.tsx`
 - `apps/web/components/common/settings/integrations-data.ts`
 - `apps/web/components/layout/headers/issues/notifications.tsx`
 - `apps/web/components/marketing/features-section.tsx`
@@ -67,7 +68,7 @@ Disable access at the owning registration points: block the Next.js routes, remo
 
 1. Confirm direct-route behavior for disabled features and use the established not-found/unavailable pattern for `/agent`, `/settings/ai`, and `/settings/agent-personalization`.
 2. Remove Agent command-palette access, team/workspace controls, dedicated Agent integration listings, and AI Agent marketing claims.
-3. Remove the unavailable Triage inbox row and Triage queue notification option from team settings and issue notifications.
+3. Remove the unavailable Triage inbox row, the Triage group from team issue-status settings, and the Triage queue notification option.
 4. Omit `AgentModule` from `AppModule`; retain the module and service source without registering controllers.
 5. Update the AI guide and parity audit to state that Agent features are temporarily disabled and that issue `triage` status remains supported.
 6. Verify no active UI links or registered HTTP endpoints expose the disabled Agent/Triage-specific features, while issue triage workflow paths remain intact.

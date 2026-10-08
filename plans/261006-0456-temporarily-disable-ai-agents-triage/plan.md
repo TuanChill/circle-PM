@@ -32,7 +32,7 @@ Temporarily disable the AI Agent and Triage product surfaces across the web app 
 ## Success Criteria
 
 - [ ] Agent chat, Agent settings/personalization, Agent command-palette entry, and the dedicated Agents integration category are inaccessible or absent.
-- [ ] Team settings no longer show Agent controls or the unavailable Triage inbox control; the Triage queue notification control is removed.
+- [ ] Team settings no longer show Agent controls, unavailable Triage inbox control, or the Triage workflow-settings group; the Triage queue notification control is removed.
 - [ ] Marketing no longer advertises an AI Agent feature.
 - [ ] Project-service `/agent/chat` and `/agent/examples` endpoints are not registered while disabled.
 - [ ] Existing issue `triage` status/category, backlog membership, filters, records, and schemas remain unchanged.
@@ -43,7 +43,7 @@ Temporarily disable the AI Agent and Triage product surfaces across the web app 
 ### Included
 
 - Disable the Agent route and settings routes, remove Agent entry points, disable its backend controller registration, and remove dedicated Agent integration listings.
-- Remove the unsupported Triage inbox/settings and notification entry points.
+- Remove the unsupported Triage inbox/settings group and notification entry points.
 - Update AI Agent marketing claims and affected maintainer documentation.
 - Preserve code, data, and migrations required to re-enable the feature.
 

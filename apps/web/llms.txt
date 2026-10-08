@@ -1,6 +1,6 @@
 # Circle
 
-> Linear-inspired project management application built with Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Zustand and nuqs. Agent pages and Agent API endpoints are temporarily disabled; the issue `triage` workflow remains supported, while Triage inbox and notification controls are disabled.
+> Linear-inspired project management application built with Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Zustand and nuqs. Agent pages and Agent API endpoints are temporarily disabled; the issue `triage` workflow remains supported, while its settings group, inbox and notification controls are disabled.
 
 Key facts for coding agents:
 

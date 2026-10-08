@@ -7,7 +7,7 @@
 > **Temporary product disablement (2026-10-08):** Agent pages and settings are blocked,
 > Agent entry points and integrations are hidden, and the project-service Agent endpoints
 > are unregistered. The issue `triage` workflow category remains supported; only the Triage
-> inbox and notification controls are disabled. The Agent implementation and persisted data
+> inbox, workflow-settings group, and notification controls are disabled. The Agent implementation and persisted data
 > remain in place for possible re-enablement.
 
 Circle is a **Linear-inspired project management interface**: issues, projects, teams,

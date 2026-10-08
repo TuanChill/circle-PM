@@ -100,10 +100,6 @@ export default function TeamIssueStatusesSettings({ teamId }: TeamIssueStatusesS
          })),
       [configurableStatuses]
    );
-   const triageStatuses = configurableStatuses
-      .filter((status) => status.category === 'triage')
-      .sort((a, b) => a.position - b.position);
-
    const startCreate = (category: IssueStatusCategory) => {
       setEditingStatus(null);
       setDraft(newStatusDefaults(category));
@@ -264,49 +260,6 @@ export default function TeamIssueStatusesSettings({ teamId }: TeamIssueStatusesS
                      ))}
                   </div>
                ))}
-
-               <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
-                  <div>
-                     <div className="text-sm font-medium">Triage</div>
-                     <p className="text-xs text-muted-foreground">
-                        Optional incoming-issue status category.
-                     </p>
-                  </div>
-                  {triageStatuses.length === 0 ? (
-                     <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startCreate('triage')}
-                     >
-                        <Plus className="size-3.5" /> Add Triage status
-                     </Button>
-                  ) : (
-                     <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startCreate('triage')}
-                     >
-                        <Plus className="size-3.5" /> Add status
-                     </Button>
-                  )}
-               </div>
-               {triageStatuses.map((status, index) => (
-                  <StatusRow
-                     key={status.id}
-                     status={status}
-                     isLast={false}
-                     isFirst={index === 0}
-                     isLastInGroup={index === triageStatuses.length - 1}
-                     onEdit={() => startEdit(status)}
-                     onDelete={() => setDeletingStatus(status)}
-                     onMoveUp={() => moveStatus('triage', status.id, -1)}
-                     onMoveDown={() => moveStatus('triage', status.id, 1)}
-                     onDragStart={() => setDraggedStatusId(status.id)}
-                     onDrop={() => dropOnStatus('triage', status.id)}
-                  />
-               ))}
             </section>
          </main>
 
@@ -320,7 +273,7 @@ export default function TeamIssueStatusesSettings({ teamId }: TeamIssueStatusesS
                      <DialogDescription>
                         {editingStatus
                            ? 'Update the name, color, or description of this status.'
-                           : `Add a status to ${draft.category === 'triage' ? 'Triage' : CATEGORIES.find((category) => category.category === draft.category)?.label} for ${team?.name ?? 'this team'}.`}
+                           : `Add a status to ${CATEGORIES.find((category) => category.category === draft.category)?.label} for ${team?.name ?? 'this team'}.`}
                      </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
