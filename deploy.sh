@@ -198,6 +198,26 @@ fi
 echo "Starting backend services and API gateway..."
 "${COMPOSE[@]}" up -d --remove-orphans auth-service user-service notification-service project-service web apisix apisix-homepage
 
+echo "Checking project-service startup..."
+stable_attempts=0
+for attempt in {1..30}; do
+  if "${COMPOSE[@]}" ps --status running --services | grep -Fxq project-service; then
+    stable_attempts=$((stable_attempts + 1))
+    if [[ "$stable_attempts" -ge 5 ]]; then
+      break
+    fi
+  else
+    stable_attempts=0
+  fi
+  if [[ "$attempt" == 30 ]]; then
+    echo "project-service did not remain running after deployment." >&2
+    "${COMPOSE[@]}" ps --all >&2 || true
+    "${COMPOSE[@]}" logs --tail=120 project-service >&2 || true
+    exit 1
+  fi
+  sleep 2
+done
+
 apisix_profile="$(awk -F= '$1 == "APISIX_PROFILE" { value=$2 } END { print value }' .env)"
 apisix_profile="${apisix_profile:-dev}"
 
@@ -214,7 +234,7 @@ for attempt in {1..30}; do
   sleep 2
 done
 
-echo "Deployment completed. Runtime smoke tests are intentionally local-only."
+echo "Deployment completed. Authenticated runtime smoke tests remain local-only."
 "${COMPOSE[@]}" ps
 
 mkdir -p "$deployment_state_dir"
