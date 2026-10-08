@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Disable AI Agent and Triage surfaces"
-status: in_progress
+status: complete
 priority: P1
 effort: "0.5d"
 dependencies: []
@@ -75,11 +75,11 @@ Disable access at the owning registration points: block the Next.js routes, remo
 
 ## Todo
 
-- [ ] Disable direct Agent and AI settings routes.
-- [ ] Remove Agent and Triage-specific UI entry points and marketing claims.
-- [ ] Unregister the Agent API module.
-- [ ] Update maintainer documentation.
-- [ ] Verify disabled surfaces and preserved issue triage workflow.
+- [x] Disable direct Agent and AI settings routes.
+- [x] Remove Agent and Triage-specific UI entry points and marketing claims.
+- [x] Unregister the Agent API module.
+- [x] Update maintainer documentation.
+- [x] Verify disabled surfaces and preserved issue triage workflow.
 
 ## Success Criteria
 
@@ -100,6 +100,12 @@ Disable access at the owning registration points: block the Next.js routes, remo
 ## Security Considerations
 
 - Disabled Agent endpoints must not remain callable through direct API requests. No authentication or persisted-data contract is otherwise changed.
+
+## Verification
+
+- Local web typecheck, lint, and production build passed; project-service typecheck and build passed. Commit `b6e0c2d` passed Backend CI run [37727089572](https://github.com/TuanChill/circle-PM/actions/runs/37727089572) and production deploy [37727246013](https://github.com/TuanChill/circle-PM/actions/runs/37727246013).
+- Production browser check of `/capylabs/settings/teams/OUT/issue-statuses` showed only Backlog, Todo, In Progress, Done, and Canceled groups. Team settings showed no Triage row or Agent section; the notifications popover showed no triage-queue option. Direct visits to `/capylabs/agent`, `/capylabs/settings/ai`, and `/capylabs/settings/agent-personalization` returned 404.
+- Production project-service health returned HTTP 200. `GET /circle/api/agent/examples` and an invalid empty `POST /circle/api/agent/chat` both returned HTTP 404. No database migration or data mutation was part of this change.
 
 ## Next Steps
 
