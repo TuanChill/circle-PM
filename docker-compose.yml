@@ -166,11 +166,35 @@ services:
         SERVICE: project-service
     ports:
       - '${PROJECT_SERVICE_APP_PORT:-3304}:${PROJECT_SERVICE_APP_PORT:-3304}'
+    expose:
+      - '${GRPC_PROJECT_SERVICE_PORT:-3314}'
+    environment:
+      GRPC_PROJECT_SERVICE_HOST: project-service
+      GRPC_PROJECT_SERVICE_PORT: ${GRPC_PROJECT_SERVICE_PORT:-3314}
+      LARK_INTEGRATION_ENCRYPTION_KEY: ${LARK_INTEGRATION_ENCRYPTION_KEY:?Set LARK_INTEGRATION_ENCRYPTION_KEY}
     env_file:
       - .env
     depends_on:
       - db
       - redis
+    networks:
+      - nest-turbo-network
+
+  lark-bot-service:
+    container_name: nest_turbo_lark_bot_service
+    build:
+      context: .
+      dockerfile: .docker/compose/nodejs/Dockerfile
+      args:
+        SERVICE: lark-bot-service
+    ports:
+      - '${LARK_BOT_SERVICE_APP_PORT:-3305}:${LARK_BOT_SERVICE_APP_PORT:-3305}'
+    environment:
+      GRPC_PROJECT_SERVICE_HOST: project-service
+      GRPC_PROJECT_SERVICE_PORT: ${GRPC_PROJECT_SERVICE_PORT:-3314}
+      LARK_INTEGRATION_ENCRYPTION_KEY: ${LARK_INTEGRATION_ENCRYPTION_KEY:?Set LARK_INTEGRATION_ENCRYPTION_KEY}
+    depends_on:
+      - project-service
     networks:
       - nest-turbo-network
 

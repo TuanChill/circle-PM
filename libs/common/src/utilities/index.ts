@@ -1,4 +1,5 @@
 export * from './hash.util';
+export * from './encrypted-secret.util';
 export * from './log.util';
 export * from './time.util';
 export * from './error.util';

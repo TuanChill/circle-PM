@@ -6,6 +6,7 @@ import {
   parseAdvancedIssueFilters,
 } from './advanced-issue-filter';
 import { canAssignIssueToMember } from './assignee-scope';
+import { shouldQueueAssignmentNotification } from './assignment-notification';
 import {
   AddReactionDto,
   AddRelationDto,
@@ -26,6 +27,7 @@ import {
   FileAttachment,
   Issue,
   IssueActivity,
+  IssueAssignmentOutbox,
   IssueComment,
   IssueLabel,
   IssueRelation,
@@ -1343,6 +1345,18 @@ export class IssuesService {
         `${actor?.name || actorId} assigned this issue to you`,
       );
     }
+    if (shouldQueueAssignmentNotification(undefined, dto.assigneeId, team.workspaceId)) {
+      this.em.persist(
+        new IssueAssignmentOutbox({
+          id: v7(),
+          workspaceId: team.workspaceId,
+          issueIdentifier: issue.identifier,
+          issueTitle: issue.title,
+          assigneeId: dto.assigneeId,
+          actorId,
+        }),
+      );
+    }
     await this.em.flush();
 
     return this.findOne(identifier, actorId);
@@ -1574,6 +1588,24 @@ export class IssuesService {
           'assignment',
           `${name} assigned this issue to you`,
         );
+        if (
+          shouldQueueAssignmentNotification(
+            previousAssigneeId,
+            dto.assigneeId,
+            nextTeam.workspaceId,
+          )
+        ) {
+          this.em.persist(
+            new IssueAssignmentOutbox({
+              id: v7(),
+              workspaceId: nextTeam.workspaceId,
+              issueIdentifier: issue.identifier,
+              issueTitle: issue.title,
+              assigneeId: dto.assigneeId,
+              actorId,
+            }),
+          );
+        }
       }
     }
     if (dto.teamId !== undefined) issue.teamId = dto.teamId;

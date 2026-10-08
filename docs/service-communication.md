@@ -1,6 +1,6 @@
 # Service Communication
 
-How the three services talk to each other, which ports they use, and what to change if you swap the transport.
+How the Circle services talk to each other, which ports they use, and what to change if you swap the transport.
 
 ---
 
@@ -26,6 +26,8 @@ External traffic reaches the services over **HTTP**, routed by Apache APISIX (or
 - **auth-service** — HTTP only. Never listens for RPC; it is purely a gRPC *client* of the other two.
 - **user-service** — HTTP + gRPC listener. Owns the `User` entity.
 - **notification-service** — HTTP + gRPC listener, and a gRPC client of user-service.
+- **project-service** — HTTP + gRPC listener. It owns workspaces/issues and serves durable issue-assignment notifications to internal consumers.
+- **lark-bot-service** — private HTTP health endpoint and a gRPC client of project-service. It sends workspace-scoped issue assignment notices to Lark.
 
 ---
 
@@ -36,9 +38,11 @@ External traffic reaches the services over **HTTP**, routed by Apache APISIX (or
 | auth-service | 3300 | — (client only) | `AUTH_SERVICE_APP_PORT` |
 | user-service | 3301 | **3311** | `USER_SERVICE_APP_PORT`, `GRPC_USER_SERVICE_HOST/PORT` |
 | notification-service | 3303 | **3313** | `NOTIFICATION_SERVICE_APP_PORT`, `GRPC_NOTIFICATION_SERVICE_HOST/PORT` |
+| project-service | 3304 | **3314** | `PROJECT_SERVICE_APP_PORT`, `GRPC_PROJECT_SERVICE_HOST/PORT` |
+| lark-bot-service | 3305 | — (client only) | `LARK_BOT_SERVICE_APP_PORT`, `GRPC_PROJECT_SERVICE_HOST/PORT` |
 
 > ⚠️ **Note:**
-> - Clients dial the same `0.0.0.0` the server binds to. That works locally because the OS resolves it to loopback. Once services run on separate hosts or containers, clients must point at a real hostname.
+> - Clients dial the host setting the server binds to. For Docker Compose, use the service hostname `project-service`; for a native process use a reachable host such as `127.0.0.1`.
 > - Any new env var must also be added to `globalEnv` in `turbo.json`, or it will not reach the tasks.
 
 ---
@@ -48,7 +52,7 @@ External traffic reaches the services over **HTTP**, routed by Apache APISIX (or
 `MicroserviceFactory` supports TCP; it is simply not the default.
 
 > ⚠️ **If you switch a service to TCP, you must set its port explicitly.**
-> There are no defaults. `tcp.config.ts` reads `TCP_*_HOST` / `TCP_*_PORT` and leaves them `undefined` when unset, and **3311 / 3313 belong to gRPC** — reusing them collides with the running gRPC listener.
+> There are no defaults. `tcp.config.ts` reads `TCP_*_HOST` / `TCP_*_PORT` and leaves them `undefined` when unset, and **3311 / 3313 / 3314 belong to gRPC** — reusing them collides with a running gRPC listener.
 
 Pick free ports, e.g.:
 
@@ -150,3 +154,9 @@ Mapping table: `libs/common/src/utilities/grpc-status.util.ts`.
 | TCP config (optional) | `libs/common/src/config/tcp.config.ts` |
 | Error envelope | `libs/common/src/exceptions/all-exception.filter.ts`, `libs/core/src/base/base.service.ts` |
 | Providers | `apps/user-service/src/modules/user/user.consumer.ts`, `apps/notification-service/src/modules/send-mail/send-mail.consumer.ts` |
+
+## Lark assignment delivery
+
+`project-service` writes an assignment outbox row in the issue transaction. The row includes the Circle workspace ID, issue snapshot, assignee, and delivery state. `lark-bot-service` claims ready rows over the private `ProjectService` gRPC contract, resolves that workspace's Lark app/group/member mapping, sends the message, then acknowledges or schedules a retry. The contract is in `libs/common/src/grpc/proto/project.proto` and `project-grpc.interface.ts`.
+
+The app secret is stored encrypted with AES-256-GCM. Set `LARK_INTEGRATION_ENCRYPTION_KEY` to the same 32-byte hexadecimal key in `project-service` and `lark-bot-service`. Generate it with `openssl rand -hex 32`; keep it in the deployment secret manager and retain the key to decrypt saved workspace integrations. The project gRPC port is exposed only to the Compose network in production.

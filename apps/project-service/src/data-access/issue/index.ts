@@ -1,4 +1,6 @@
 export * from './issue.entity';
+export * from './issue-assignment-outbox.entity';
+export * from './issue-assignment-outbox.repository';
 export * from './issue-status.entity';
 export * from './issue-subscription.entity';
 export * from './issue-template.entity';

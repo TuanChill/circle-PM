@@ -8,6 +8,7 @@ import { InitiativeActivity } from './initiative/initiative-activity.entity';
 import { InitiativeUpdate } from './initiative/initiative-update.entity';
 import { Initiative } from './initiative/initiative.entity';
 import { IssueActivity } from './issue/issue-activity.entity';
+import { IssueAssignmentOutbox } from './issue/issue-assignment-outbox.entity';
 import { IssueComment } from './issue/issue-comment.entity';
 import { IssueRelation, PrLink } from './issue/issue-relation.entity';
 import { IssueStatus } from './issue/issue-status.entity';
@@ -33,6 +34,8 @@ import { TeamMember } from './team/team-member.entity';
 import { Team } from './team/team.entity';
 import { SavedView } from './view/saved-view.entity';
 import { WorkspaceInvitation } from './workspace/workspace-invitation.entity';
+import { WorkspaceLarkIntegration } from './workspace/workspace-lark-integration.entity';
+import { WorkspaceLarkMember } from './workspace/workspace-lark-member.entity';
 import { WorkspaceMember } from './workspace/workspace-member.entity';
 import { Workspace } from './workspace/workspace.entity';
 
@@ -52,6 +55,8 @@ export * from './review';
 
 export const ALL_ENTITIES = [
   Workspace,
+  WorkspaceLarkIntegration,
+  WorkspaceLarkMember,
   WorkspaceMember,
   WorkspaceInvitation,
   Member,
@@ -76,6 +81,7 @@ export const ALL_ENTITIES = [
   CycleCalendarSubscription,
   FileAttachment,
   Issue,
+  IssueAssignmentOutbox,
   IssueStatus,
   IssueSubscription,
   IssueTemplate,
