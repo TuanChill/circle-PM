@@ -10,6 +10,10 @@ import {
   WorkspaceMember,
 } from '../../data-access';
 
+jest.mock('@mikro-orm/core', () => ({
+  EntityManager: class MockEntityManager {},
+}));
+
 jest.mock('../../data-access', () => ({
   Issue: class MockIssue {},
   IssueStatus: class MockIssueStatus {},

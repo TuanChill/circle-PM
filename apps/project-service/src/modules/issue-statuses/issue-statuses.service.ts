@@ -1,5 +1,10 @@
-import type { EntityManager } from '@mikro-orm/core';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/core';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { v7 } from 'uuid';
 import {
   CreateIssueStatusDto,
@@ -79,6 +84,7 @@ const DUPLICATE_STATUS = {
 @Injectable()
 export class IssueStatusesService {
   constructor(
+    @Inject(EntityManager)
     private readonly em: EntityManager,
     private readonly workspacesService: WorkspacesService,
   ) {}
