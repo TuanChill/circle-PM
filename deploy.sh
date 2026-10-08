@@ -98,6 +98,30 @@ while IFS= read -r changed_file; do
   esac
 done <<< "$changed_files"
 
+migration_dir="apps/project-service/src/database/migrations"
+if [[ "$previous_ref" =~ ^[0-9a-fA-F]{40}$ ]] && git cat-file -e "${previous_ref}^{commit}" 2>/dev/null; then
+  migration_changes="$(git diff --name-status "$previous_ref" "$DEPLOY_REF" -- "$migration_dir")"
+else
+  echo "Missing a valid last-deployed revision; refusing to infer which project-service migrations are safe to run." >&2
+  exit 1
+fi
+
+new_migrations=()
+while IFS=$'\t' read -r change_type migration_path; do
+  [[ -n "$change_type" ]] || continue
+  if [[ "$change_type" != A ]]; then
+    echo "Project-service migration files are immutable after creation; refusing to deploy changed file: $migration_path" >&2
+    exit 1
+  fi
+
+  migration_file="${migration_path##*/}"
+  if [[ ! "$migration_file" =~ ^Migration[0-9]{14}\.ts$ ]]; then
+    echo "Unexpected project-service migration filename: $migration_file" >&2
+    exit 1
+  fi
+  new_migrations+=("${migration_file%.ts}")
+done <<< "$migration_changes"
+
 if [[ "$build_all" == true ]]; then
   build_targets=(auth-service user-service notification-service project-service web apisix adc)
 fi
@@ -163,8 +187,13 @@ else
   echo "No new project-service migrations detected; skipping database backup."
 fi
 
-echo "Applying database migrations..."
-"${COMPOSE[@]}" run --rm --no-deps -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 project-service pnpm --filter=project-service migration:up
+if [[ "${#new_migrations[@]}" -gt 0 ]]; then
+  migration_filter="$(IFS=,; printf '%s' "${new_migrations[*]}")"
+  echo "Applying newly added project-service migrations: ${new_migrations[*]}"
+  "${COMPOSE[@]}" run --rm --no-deps -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 project-service pnpm --filter=project-service migration:up --only "$migration_filter"
+else
+  echo "No new project-service migration files; skipping migration runner."
+fi
 
 echo "Starting backend services and API gateway..."
 "${COMPOSE[@]}" up -d --remove-orphans auth-service user-service notification-service project-service web apisix apisix-homepage

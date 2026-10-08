@@ -4,22 +4,22 @@ Project statuses are workspace-level child statuses grouped under the existing l
 
 The user-facing groups map to the persisted categories as follows:
 
-| Group | Category |
-|---|---|
-| Backlog | `backlog` |
-| Planned | `unstarted` |
-| In Progress | `started` |
-| Completed | `completed` |
-| Canceled | `canceled` |
+| Group       | Category    |
+| ----------- | ----------- |
+| Backlog     | `backlog`   |
+| Planned     | `unstarted` |
+| In Progress | `started`   |
+| Completed   | `completed` |
+| Canceled    | `canceled`  |
 
 ## API
 
 The project service exposes these authenticated workspace-scoped endpoints:
 
-| Method | Route | Access |
-|---|---|---|
-| `GET` | `/circle/api/workspaces/:workspaceId/project-statuses` | Workspace members who can access the workspace |
-| `POST` | `/circle/api/workspaces/:workspaceId/project-statuses` | Workspace Owners and Admins |
+| Method | Route                                                  | Access                                         |
+| ------ | ------------------------------------------------------ | ---------------------------------------------- |
+| `GET`  | `/circle/api/workspaces/:workspaceId/project-statuses` | Workspace members who can access the workspace |
+| `POST` | `/circle/api/workspaces/:workspaceId/project-statuses` | Workspace Owners and Admins                    |
 
 Create request body:
 
@@ -36,7 +36,7 @@ The server trims names/descriptions, rejects duplicate workspace status names, v
 
 ## Migration Safety
 
-The `project_statuses` migration is additive and does not rewrite existing projects or seed custom rows. Production deployment creates a custom-format PostgreSQL dump under `/opt/circle/db-backups/` before running any new project-service migration, validates it with `pg_restore --list`, and stops before migration if backup creation or validation fails. The dump and schema-only companion are stored outside the application checkout with owner-only access. The deploy script stores the last successfully deployed revision under `/opt/circle/deploy-state/`; if that marker is missing or the revision includes a project-service migration, the deployment creates and verifies a fresh backup before running migrations.
+The `project_statuses` migration is additive and does not rewrite existing projects or seed custom rows. Production deployment creates a custom-format PostgreSQL dump under `/opt/circle/db-backups/` before running any newly added project-service migration, validates it with `pg_restore --list`, and stops before migration if backup creation or validation fails. The dump and schema-only companion are stored outside the application checkout with owner-only access. The deploy script stores the last successfully deployed revision under `/opt/circle/deploy-state/`; a missing or invalid marker stops deployment because the safe migration range cannot be inferred. When the deployed revision includes a project-service migration, deployment creates and verifies a fresh backup, then runs only migration files newly added since that revision. Existing migration files are immutable; editing or removing one stops deployment so it can be handled explicitly instead of replaying the whole pending migration history.
 
 The migration rollback drops the catalog table, so first reassign any projects using custom IDs; otherwise their status names/colors would no longer resolve. Migration execution is an operator-controlled deployment step, not part of application startup.
 
