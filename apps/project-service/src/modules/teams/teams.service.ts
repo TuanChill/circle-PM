@@ -223,6 +223,12 @@ export class TeamsService {
     const isJoined = memberId
       ? teamMembers.some((tm) => tm.memberId === memberId)
       : team.joined;
+    const canManageMembers = memberId
+      ? canManageTeamRole(
+          workspaceMembers.find((membership) => membership.memberId === memberId)?.role,
+          teamMembers.find((membership) => membership.memberId === memberId)?.role,
+        )
+      : false;
 
     return {
       id: team.id,
@@ -239,6 +245,7 @@ export class TeamsService {
       unestimatedAsOne: team.unestimatedAsOne,
       createdAt: team.createdAt?.toISOString(),
       updatedAt: team.updatedAt?.toISOString(),
+      canManageMembers,
       members: members.map((m) => this.toPublicMember(m)),
       projects,
     };

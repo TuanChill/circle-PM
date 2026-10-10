@@ -65,41 +65,43 @@ export default function TeamMembers() {
          <div className="flex items-center justify-between px-6 py-3">
             <span className="text-sm text-muted-foreground font-medium">Name ↓</span>
             <div className="flex items-center gap-2">
-               <Popover open={addOpen} onOpenChange={setAddOpen}>
-                  <PopoverTrigger asChild>
-                     <Button size="xs" variant="secondary">
-                        <Plus className="size-4 mr-1" />
-                        Add a member
-                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0" align="end">
-                     <Command>
-                        <CommandInput placeholder="Search members..." />
-                        <CommandList>
-                           <CommandEmpty>
-                              {addableMembers.length === 0
-                                 ? 'All other members are already on this team.'
-                                 : 'No members found.'}
-                           </CommandEmpty>
-                           <CommandGroup>
-                              {addableMembers.map((member) => (
-                                 <CommandItem
-                                    key={member.id}
-                                    value={member.name}
-                                    onSelect={() => handleAddMember(member.id)}
-                                 >
-                                    <Avatar className="size-5">
-                                       <AvatarImage src={member.avatarUrl} alt={member.name} />
-                                       <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    {member.name}
-                                 </CommandItem>
-                              ))}
-                           </CommandGroup>
-                        </CommandList>
-                     </Command>
-                  </PopoverContent>
-               </Popover>
+               {team.canManageMembers && (
+                  <Popover open={addOpen} onOpenChange={setAddOpen}>
+                     <PopoverTrigger asChild>
+                        <Button size="xs" variant="secondary">
+                           <Plus className="size-4 mr-1" />
+                           Add a member
+                        </Button>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-64 p-0" align="end">
+                        <Command>
+                           <CommandInput placeholder="Search members..." />
+                           <CommandList>
+                              <CommandEmpty>
+                                 {addableMembers.length === 0
+                                    ? 'All other members are already on this team.'
+                                    : 'No members found.'}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                 {addableMembers.map((member) => (
+                                    <CommandItem
+                                       key={member.id}
+                                       value={member.name}
+                                       onSelect={() => handleAddMember(member.id)}
+                                    >
+                                       <Avatar className="size-5">
+                                          <AvatarImage src={member.avatarUrl} alt={member.name} />
+                                          <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                       </Avatar>
+                                       {member.name}
+                                    </CommandItem>
+                                 ))}
+                              </CommandGroup>
+                           </CommandList>
+                        </Command>
+                     </PopoverContent>
+                  </Popover>
+               )}
                <Button
                   size="xs"
                   variant="ghost"

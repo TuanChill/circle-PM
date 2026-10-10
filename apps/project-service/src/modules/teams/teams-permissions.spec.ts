@@ -34,6 +34,31 @@ jest.mock('../../data-access', () => {
 });
 
 describe('TeamsService role permissions', () => {
+  it('reports that a regular member cannot manage team members', async () => {
+    const team = new Team({
+      id: 'team-1',
+      name: 'Engineering',
+      workspaceId: 'workspace-1',
+    });
+    const em = {
+      findOne: jest.fn(async (entity: unknown) => (entity === Team ? team : null)),
+      find: jest.fn(async (entity: unknown) => {
+        if (entity === TeamMember) return [{ memberId: 'member-1', role: 'member' }];
+        if (entity === WorkspaceMember) return [{ memberId: 'member-1', role: 'Member' }];
+        return [];
+      }),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue(['team-1']),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(service.findOne('team-1', 'member-1')).resolves.toMatchObject({
+      id: 'team-1',
+      canManageMembers: false,
+    });
+  });
+
   it('does not let a visible regular member update team settings', async () => {
     const team = new Team({
       id: 'team-1',
@@ -251,7 +276,11 @@ describe('TeamsService role permissions', () => {
 
     await expect(
       service.addMember('team-1', { memberId: 'member-2' }, 'admin-1'),
-    ).resolves.toMatchObject({ id: 'team-1', joined: false });
+    ).resolves.toMatchObject({
+      id: 'team-1',
+      joined: false,
+      canManageMembers: true,
+    });
     expect(em.persist).toHaveBeenCalledWith(
       expect.objectContaining({ teamId: 'team-1', memberId: 'member-2', role: 'member' }),
     );
