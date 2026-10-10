@@ -83,11 +83,15 @@ export class TeamsService {
     const team = await this.em.findOne(Team, { id: teamId });
     if (!team?.workspaceId) throw new NotFoundException(`Team ${teamId} not found`);
     await this.assertTeamAccess(memberId, teamId, `Team ${teamId} not found`);
-    const [workspaceMembership, teamMembership] = await Promise.all([
+    const [workspace, workspaceMembership, teamMembership] = await Promise.all([
+      this.em.findOne(Workspace, { id: team.workspaceId }),
       this.em.findOne(WorkspaceMember, { workspaceId: team.workspaceId, memberId }),
       this.em.findOne(TeamMember, { teamId, memberId }),
     ]);
-    if (!canManageTeamRole(workspaceMembership?.role, teamMembership?.role)) {
+    if (
+      workspace?.ownerId !== memberId &&
+      !canManageTeamRole(workspaceMembership?.role, teamMembership?.role)
+    ) {
       throw new NotFoundException(`Team ${teamId} not found`);
     }
     return team;
@@ -206,6 +210,9 @@ export class TeamsService {
     const workspaceMembers = team.workspaceId
       ? await this.em.find(WorkspaceMember, { workspaceId: team.workspaceId })
       : [];
+    const workspace = team.workspaceId
+      ? await this.em.findOne(Workspace, { id: team.workspaceId })
+      : null;
     const visibleMemberIds = new Set(
       workspaceMembers.map((membership) => membership.memberId),
     );
@@ -223,12 +230,14 @@ export class TeamsService {
     const isJoined = memberId
       ? teamMembers.some((tm) => tm.memberId === memberId)
       : team.joined;
-    const canManageMembers = memberId
-      ? canManageTeamRole(
-          workspaceMembers.find((membership) => membership.memberId === memberId)?.role,
-          teamMembers.find((membership) => membership.memberId === memberId)?.role,
-        )
-      : false;
+    const canManageMembers = Boolean(
+      memberId &&
+        (workspace?.ownerId === memberId ||
+          canManageTeamRole(
+            workspaceMembers.find((membership) => membership.memberId === memberId)?.role,
+            teamMembers.find((membership) => membership.memberId === memberId)?.role,
+          )),
+    );
 
     return {
       id: team.id,

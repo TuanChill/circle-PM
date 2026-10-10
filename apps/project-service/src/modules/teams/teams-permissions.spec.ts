@@ -218,6 +218,55 @@ describe('TeamsService role permissions', () => {
     expect(em.flush).not.toHaveBeenCalled();
   });
 
+  it('lets the workspace owner add a member when their membership role is stale', async () => {
+    const team = new Team({
+      id: 'team-1',
+      name: 'Engineering',
+      workspaceId: 'workspace-1',
+    });
+    let addedMembership: InstanceType<typeof TeamMember> | null = null;
+    const em = {
+      findOne: jest.fn(async (entity: unknown, where?: Record<string, unknown>) => {
+        if (entity === Team) return team;
+        if (entity === Workspace) return { id: 'workspace-1', ownerId: 'owner-1' };
+        if (entity === WorkspaceMember) {
+          return where?.memberId === 'member-2'
+            ? { memberId: 'member-2', role: 'Member' }
+            : { memberId: 'owner-1', role: 'Member' };
+        }
+        if (entity === TeamMember) {
+          return where?.memberId === 'owner-1' ? { role: 'member' } : addedMembership;
+        }
+        return null;
+      }),
+      find: jest.fn(async (entity: unknown) => {
+        if (entity === TeamMember) return addedMembership ? [addedMembership] : [];
+        if (entity === WorkspaceMember) {
+          return [
+            { memberId: 'owner-1', role: 'Member' },
+            { memberId: 'member-2', role: 'Member' },
+          ];
+        }
+        return [];
+      }),
+      persist: jest.fn((record: InstanceType<typeof TeamMember>) => {
+        addedMembership = record;
+      }),
+      flush: jest.fn(),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue(['team-1']),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(
+      service.addMember('team-1', { memberId: 'member-2' }, 'owner-1'),
+    ).resolves.toMatchObject({ id: 'team-1' });
+    expect(em.persist).toHaveBeenCalledWith(
+      expect.objectContaining({ teamId: 'team-1', memberId: 'member-2', role: 'member' }),
+    );
+  });
+
   it('lets a workspace admin add another workspace member to a team', async () => {
     const team = new Team({
       id: 'team-1',
