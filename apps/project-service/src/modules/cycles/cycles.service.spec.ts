@@ -47,14 +47,16 @@ describe('CyclesService settings', () => {
     let settings = initialSettings;
     const persisted: unknown[] = [];
     const defaultCycles = [
-      {
+      new Cycle({
         id: 'existing-upcoming',
         teamId: 'team-a',
         status: 'upcoming',
-        deletedAt: undefined,
-      },
+        startDate: new Date(Date.now() + 7 * 86400000),
+        endDate: new Date(Date.now() + 20 * 86400000),
+      }),
     ];
-    const cycleRows = initialCycles ?? (initialSettings?.enabled ? defaultCycles : []);
+    const cycleRows: Cycle[] =
+      initialCycles ?? (initialSettings?.enabled ? defaultCycles : []);
     const em = {
       findOne: jest.fn(async (entity: unknown, where?: { id?: string }) => {
         if (entity === CycleSettings) return settings ?? null;
@@ -64,6 +66,11 @@ describe('CyclesService settings', () => {
         return null;
       }),
       find: jest.fn(async (entity: unknown, where?: Record<string, unknown>) => {
+        if (entity === CycleSettings) {
+          return settings && (!where || settings.enabled === where.enabled)
+            ? [settings]
+            : [];
+        }
         if (entity === Cycle) return cycleRows;
         if (entity === Issue) {
           return initialIssues.filter((issue) => {
@@ -82,6 +89,7 @@ describe('CyclesService settings', () => {
       persist: jest.fn((value: unknown) => {
         persisted.push(value);
         if (value instanceof CycleSettings) settings = value;
+        if (value instanceof Cycle) cycleRows.push(value);
       }),
       flush: jest.fn(async () => undefined),
     } as unknown as EntityManager;
@@ -141,6 +149,24 @@ describe('CyclesService settings', () => {
     expect(createdCycles.every((cycle) => cycle.teamId === 'team-a')).toBe(true);
     expect(createdCycles[0].startDate).toBeInstanceOf(Date);
     expect(createdCycles[0].endDate).toBeInstanceOf(Date);
+  });
+
+  it('reconciles enabled team cycles repeatedly without generating duplicate schedules', async () => {
+    const settings = new CycleSettings({
+      teamId: 'team-a',
+      enabled: true,
+      upcomingCycleCount: 2,
+    });
+    const { service, em, persisted } = createService(settings, []);
+
+    await Promise.all([service.reconcileEnabledTeams(), service.reconcileEnabledTeams()]);
+
+    const generatedCycles = persisted.filter(
+      (value) => value instanceof Cycle,
+    ) as Cycle[];
+    expect(generatedCycles).toHaveLength(2);
+    expect(generatedCycles.every((cycle) => cycle.teamId === 'team-a')).toBe(true);
+    expect(em.find).toHaveBeenCalledWith(CycleSettings, { enabled: true });
   });
 
   it('soft-deletes upcoming cycles when cadence is disabled', async () => {
@@ -321,6 +347,52 @@ describe('CyclesService settings', () => {
 
     expect(activeStarted.cycleId).toBe(next.id);
     expect(activeCompleted.cycleId).toBe(previous.id);
+  });
+
+  it('rolls unfinished active issues forward but leaves backlog, triage, and closed issues behind', async () => {
+    const today = new Date();
+    const todayStart = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+    );
+    const previous = new Cycle({
+      id: 'cycle-previous',
+      teamId: 'team-a',
+      status: 'current',
+      startDate: new Date(todayStart.getTime() - 14 * 86400000),
+      endDate: new Date(todayStart.getTime() - 1 * 86400000),
+    });
+    const current = new Cycle({
+      id: 'cycle-current',
+      teamId: 'team-a',
+      status: 'upcoming',
+      startDate: todayStart,
+      endDate: new Date(todayStart.getTime() + 13 * 86400000),
+    });
+    const issueIn = (statusCategory: string) =>
+      new Issue({ teamId: 'team-a', cycleId: previous.id, statusCategory });
+    const started = issueIn('started');
+    const unstarted = issueIn('unstarted');
+    const backlog = issueIn('backlog');
+    const triage = issueIn('triage');
+    const completed = issueIn('completed');
+    const canceled = issueIn('canceled');
+    const settings = new CycleSettings({ teamId: 'team-a', enabled: true });
+    const { service } = createService(
+      settings,
+      [previous, current],
+      [started, unstarted, backlog, triage, completed, canceled],
+    );
+
+    await service.getSettings('team-a', 'member-1');
+
+    expect(previous.status).toBe('completed');
+    expect(current.status).toBe('current');
+    expect(started.cycleId).toBe(current.id);
+    expect(unstarted.cycleId).toBe(current.id);
+    expect(backlog.cycleId).toBe(previous.id);
+    expect(triage.cycleId).toBe(previous.id);
+    expect(completed.cycleId).toBe(previous.id);
+    expect(canceled.cycleId).toBe(previous.id);
   });
 
   it('starts the next cycle today, rolls open work, and preserves future cadence', async () => {

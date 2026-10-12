@@ -93,21 +93,6 @@ export function useUnsubscribeCycleCalendar() {
    });
 }
 
-export function useCreateCycle() {
-   const queryClient = useQueryClient();
-
-   return useMutation({
-      mutationFn: (payload: Partial<Cycle>) => cyclesService.createCycle(payload),
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: cycleKeys.lists() });
-         toast.success('Cycle created');
-      },
-      onError: (error: Error) => {
-         toast.error(error.message || 'Failed to create cycle');
-      },
-   });
-}
-
 export function useUpdateCycle() {
    const queryClient = useQueryClient();
 

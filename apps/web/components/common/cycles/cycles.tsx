@@ -42,7 +42,7 @@ export default function Cycles({ teamId }: { teamId?: string }) {
    if (cycles.length === 0) {
       return (
          <div className="w-full flex items-center justify-center p-12 text-sm text-muted-foreground">
-            No cycles found.
+            No cycles yet. Enable Cycles in team settings to generate a recurring schedule.
          </div>
       );
    }

@@ -2,7 +2,6 @@
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTeams } from '@/hooks/queries/use-teams-query';
-import { CreateCycleDialog } from '@/components/common/cycles/create-cycle-dialog';
 import { CycleCalendarSubscriptionDialog } from '@/components/common/cycles/cycle-calendar-subscription-dialog';
 import QueryErrorState from '@/components/common/query-error-state';
 import { ChevronRight, Star } from 'lucide-react';
@@ -46,7 +45,6 @@ export default function HeaderNav() {
          </div>
          <div className="flex items-center gap-2">
             <CycleCalendarSubscriptionDialog teamId={team.id} />
-            <CreateCycleDialog teamId={team.id} />
          </div>
       </div>
    );
