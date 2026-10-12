@@ -9,7 +9,6 @@ import {
    DropdownMenuContent,
    DropdownMenuItem,
    DropdownMenuSeparator,
-   DropdownMenuShortcut,
    DropdownMenuSub,
    DropdownMenuSubContent,
    DropdownMenuSubTrigger,
@@ -214,29 +213,19 @@ export default function HeaderNav() {
                         <DropdownMenuSubTrigger>
                            <Calendar className="size-4 mr-2" />
                            <span>Due date</span>
-                           <DropdownMenuShortcut>⇧ D</DropdownMenuShortcut>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="w-56">
                            <DropdownMenuItem onClick={() => handleSetDueDate(tomorrow)}>
                               <Calendar className="size-4 mr-2" />
                               <span>Tomorrow</span>
-                              <DropdownMenuShortcut>
-                                 {format(tomorrow, 'EEE, d MMM')}
-                              </DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => handleSetDueDate(endOfWeek)}>
                               <Calendar className="size-4 mr-2" />
                               <span>End of this week</span>
-                              <DropdownMenuShortcut>
-                                 {format(endOfWeek, 'EEE, d MMM')}
-                              </DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => handleSetDueDate(inOneWeek)}>
                               <Calendar className="size-4 mr-2" />
                               <span>In one week</span>
-                              <DropdownMenuShortcut>
-                                 {format(inOneWeek, 'EEE, d MMM')}
-                              </DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuSeparator />
                            <DropdownMenuItem
@@ -251,7 +240,6 @@ export default function HeaderNav() {
                      <DropdownMenuItem onClick={() => handleCopy(issueUrl, 'issue link')}>
                         <Link2 className="size-4 mr-2" />
                         <span>Add link...</span>
-                        <DropdownMenuShortcut>Ctrl L</DropdownMenuShortcut>
                      </DropdownMenuItem>
 
                      <DropdownMenuItem
@@ -283,7 +271,6 @@ export default function HeaderNav() {
                            >
                               <Plus className="size-4 mr-2" />
                               <span>Sub-issue...</span>
-                              <DropdownMenuShortcut>⌘ ⇧ O</DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Parent issue relation')}>
                               <GitMerge className="size-4 mr-2" />
@@ -312,23 +299,18 @@ export default function HeaderNav() {
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Marked as sub-issue')}>
                               <span>Sub-issue of...</span>
-                              <DropdownMenuShortcut>⌘ ⇧ P</DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Marked as related')}>
                               <span>Related to...</span>
-                              <DropdownMenuShortcut>M then R</DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Marked as blocked by')}>
                               <span>Blocked by...</span>
-                              <DropdownMenuShortcut>M then B</DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Marked as blocking')}>
                               <span>Blocking...</span>
-                              <DropdownMenuShortcut>M then X</DropdownMenuShortcut>
                            </DropdownMenuItem>
                            <DropdownMenuItem onClick={() => toast.info('Marked as duplicate')}>
                               <span>Duplicate of...</span>
-                              <DropdownMenuShortcut>M then M</DropdownMenuShortcut>
                            </DropdownMenuItem>
                         </DropdownMenuSubContent>
                      </DropdownMenuSub>
@@ -345,20 +327,17 @@ export default function HeaderNav() {
                            <DropdownMenuItem onClick={() => handleCopy(displayIdentifier, 'ID')}>
                               <Copy className="size-4 mr-2" />
                               <span>Copy ID</span>
-                              <DropdownMenuShortcut>⌘ .</DropdownMenuShortcut>
                            </DropdownMenuItem>
 
                            <DropdownMenuItem onClick={() => handleCopy(issueUrl, 'URL')}>
                               <Link2 className="size-4 mr-2" />
                               <span>Copy URL</span>
-                              <DropdownMenuShortcut>⌘ ⇧ ,</DropdownMenuShortcut>
                            </DropdownMenuItem>
 
                            {displayTitle && (
                               <DropdownMenuItem onClick={() => handleCopy(displayTitle, 'title')}>
                                  <FileText className="size-4 mr-2" />
                                  <span>Copy title</span>
-                                 <DropdownMenuShortcut>{"⌘ ⇧ '"}</DropdownMenuShortcut>
                               </DropdownMenuItem>
                            )}
 
@@ -370,7 +349,6 @@ export default function HeaderNav() {
                               >
                                  <Link2 className="size-4 mr-2" />
                                  <span>Copy title as link</span>
-                                 <DropdownMenuShortcut>⌘ C</DropdownMenuShortcut>
                               </DropdownMenuItem>
                            )}
 
@@ -396,7 +374,6 @@ export default function HeaderNav() {
                            >
                               <FileText className="size-4 mr-2" />
                               <span>Copy content as Markdown</span>
-                              <DropdownMenuShortcut>⌘ ⌥ C</DropdownMenuShortcut>
                            </DropdownMenuItem>
 
                            {branchName && (
@@ -405,7 +382,6 @@ export default function HeaderNav() {
                               >
                                  <GitBranch className="size-4 mr-2" />
                                  <span>Copy git branch name</span>
-                                 <DropdownMenuShortcut>⌘ ⇧ .</DropdownMenuShortcut>
                               </DropdownMenuItem>
                            )}
 
@@ -419,7 +395,6 @@ export default function HeaderNav() {
                            >
                               <ExternalLink className="size-4 mr-2" />
                               <span>Copy as prompt</span>
-                              <DropdownMenuShortcut>⌘ ⌥ P</DropdownMenuShortcut>
                            </DropdownMenuItem>
                         </DropdownMenuSubContent>
                      </DropdownMenuSub>
@@ -455,7 +430,6 @@ export default function HeaderNav() {
                         <DropdownMenuSubTrigger>
                            <Clock className="size-4 mr-2" />
                            <span>Remind me</span>
-                           <DropdownMenuShortcut>⇧ H</DropdownMenuShortcut>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="w-44">
                            <DropdownMenuItem
@@ -492,7 +466,6 @@ export default function HeaderNav() {
                      >
                         <Trash2 className="size-4 mr-2" />
                         <span>Delete</span>
-                        <DropdownMenuShortcut>⌘ ⌫</DropdownMenuShortcut>
                      </DropdownMenuItem>
                   </DropdownMenuContent>
                </DropdownMenu>

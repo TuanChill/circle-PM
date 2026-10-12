@@ -127,7 +127,7 @@ export default function AllIssues({ categories }: AllIssuesProps) {
                   isViewTypeGrid={isViewTypeGrid}
                   emptyStateTitle="No issues yet"
                   emptyStateSubtitle="Track bugs, tasks, and feature requests for your team."
-                  emptyStateDescription="Press 'C' anywhere or click the button below to create your first issue."
+                  emptyStateDescription="Click the button below to create your first issue."
                />
             </div>
 

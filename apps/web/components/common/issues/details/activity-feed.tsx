@@ -194,6 +194,15 @@ export function ActivityFeed({
    const [mentionStart, setMentionStart] = useState(-1);
 
    useEffect(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+      textarea.style.overflowY = textarea.scrollHeight > 160 ? 'auto' : 'hidden';
+   }, [draft]);
+
+   useEffect(() => {
       setIsActivityExpanded(false);
    }, [issueIdentifier]);
 
@@ -520,9 +529,6 @@ export function ActivityFeed({
                            setMentionStart(-1);
                            return;
                         }
-                     }
-                     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-                        submitComment();
                      }
                   }}
                   placeholder="Leave a comment..."

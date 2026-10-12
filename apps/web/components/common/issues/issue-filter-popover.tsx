@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -50,24 +50,6 @@ export function IssueFilterPopover() {
    const { teamId } = useParams<{ teamId?: string }>();
    const { data: statusRecords } = useIssueStatuses(teamId);
    const status = workflowStatuses(statusRecords);
-
-   // Global shortcut 'F' to open filters
-   useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-         const target = e.target as HTMLElement;
-         const isInput =
-            target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-         if (isInput) return;
-
-         if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-            e.preventDefault();
-            setOpen((prev) => !prev);
-         }
-      };
-
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-   }, []);
 
    const addOrToggleFilter = (columnId: string, value: string) => {
       setFilters((prev) => {
@@ -160,11 +142,6 @@ export function IssueFilterPopover() {
                      onValueChange={setSearch}
                      className="text-xs h-9"
                   />
-                  {!activeCategory && (
-                     <kbd className="text-[10px] font-mono bg-muted/60 text-muted-foreground px-1.5 py-0.5 rounded border border-border/40">
-                        F
-                     </kbd>
-                  )}
                </div>
 
                <CommandList className="max-h-72 p-1 text-xs">

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { BookOpen, HelpCircle, Keyboard, MessageSquare, Search } from 'lucide-react';
+import { BookOpen, HelpCircle, MessageSquare, Search } from 'lucide-react';
 
 import {
    DropdownMenu,
@@ -44,11 +44,6 @@ export function HelpButton() {
             <DropdownMenuItem className="text-xs">
                <BookOpen className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                <span>Documentation</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs">
-               <Keyboard className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-               <span>Keyboard shortcuts</span>
-               <span className="ml-auto text-[10px] font-mono text-muted-foreground">⌘/</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-xs">

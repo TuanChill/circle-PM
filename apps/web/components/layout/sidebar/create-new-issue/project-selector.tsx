@@ -18,6 +18,7 @@ import { useEffect, useId, useState } from 'react';
 
 interface ProjectSelectorProps {
    project: Project | undefined;
+   teamId?: string;
    onOpenChange?: (open: boolean) => void;
    onInteractionStart?: () => void;
    onChange: (project: Project | undefined) => void;
@@ -25,6 +26,7 @@ interface ProjectSelectorProps {
 
 export function ProjectSelector({
    project,
+   teamId,
    onOpenChange,
    onInteractionStart,
    onChange,
@@ -34,7 +36,7 @@ export function ProjectSelector({
    const [value, setValue] = useState<string | undefined>(project?.id);
 
    const { filterByProject } = useIssuesStore();
-   const { data: projects = [] } = useProjects();
+   const { data: projects = [] } = useProjects(teamId);
 
    const allProjects = projects;
 

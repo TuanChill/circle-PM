@@ -161,7 +161,7 @@ export function DisplayOptions({ onSave, onCancel, hasUnsavedChanges }: DisplayO
                      </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                     Toggle layout view <kbd className="font-mono text-[10px] ml-1">⌘ B</kbd>
+                     Toggle layout view
                   </TooltipContent>
                </Tooltip>
             </div>

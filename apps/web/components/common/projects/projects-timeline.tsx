@@ -31,10 +31,10 @@ const LIST_WIDTH = 224;
 
 /** Zoom levels for the scale dropdown (month column width in px). */
 const ZOOM_LEVELS = [
-   { id: 'year', label: 'Year', shortcut: 'Y', monthWidth: 120 },
-   { id: 'quarter', label: 'Quarter', shortcut: 'Q', monthWidth: 240 },
-   { id: 'month', label: 'Month', shortcut: 'M', monthWidth: 480 },
-   { id: 'week', label: 'Week', shortcut: 'W', monthWidth: 960 },
+   { id: 'year', label: 'Year', monthWidth: 120 },
+   { id: 'quarter', label: 'Quarter', monthWidth: 240 },
+   { id: 'month', label: 'Month', monthWidth: 480 },
+   { id: 'week', label: 'Week', monthWidth: 960 },
 ] as const;
 type TimelineZoom = (typeof ZOOM_LEVELS)[number]['id'];
 
@@ -310,28 +310,6 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
       [zoom, syncViewport]
    );
 
-   // Y / Q / M / W keyboard shortcuts (ignored while typing).
-   useEffect(() => {
-      const onKeyDown = (event: KeyboardEvent) => {
-         if (event.metaKey || event.ctrlKey || event.altKey) return;
-         const target = event.target as HTMLElement | null;
-         if (
-            target &&
-            (target.tagName === 'INPUT' ||
-               target.tagName === 'TEXTAREA' ||
-               target.isContentEditable)
-         ) {
-            return;
-         }
-         const level = ZOOM_LEVELS.find(
-            (candidate) => candidate.shortcut.toLowerCase() === event.key.toLowerCase()
-         );
-         if (level) setZoomLevel(level.id);
-      };
-      window.addEventListener('keydown', onKeyDown);
-      return () => window.removeEventListener('keydown', onKeyDown);
-   }, [setZoomLevel]);
-
    const jumpTo = useCallback(
       (contentX: number) => {
          if (!scrollRef.current) return;
@@ -384,7 +362,6 @@ export default function ProjectsTimeline({ groups }: ProjectsTimelineProps) {
                      >
                         <span className="flex-1">{level.label}</span>
                         {zoom === level.id && <Check className="size-3.5" />}
-                        <span className="text-xs text-muted-foreground">{level.shortcut}</span>
                      </DropdownMenuItem>
                   ))}
                </DropdownMenuContent>
