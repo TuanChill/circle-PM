@@ -37,7 +37,7 @@ export default function AllIssues({ categories }: AllIssuesProps) {
    const { viewType, setViewType } = useViewStore();
    const { filters, setFilters } = useFilterStore();
    const { setDisplaySettings } = useDisplaySettingsStore();
-   const { data: serverIssues = [], isError, error, refetch } = useIssues();
+   const { data: serverIssues = [], isError, error, refetch } = useIssues({ teamId });
    const { data: statusRecords } = useIssueStatuses(teamId);
    const { openPanel } = useRightPanelStore();
    const {
