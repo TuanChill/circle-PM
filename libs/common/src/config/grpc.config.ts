@@ -2,6 +2,8 @@ import { registerAs } from '@nestjs/config';
 import {
   NOTIFICATION_GRPC_SERVICE,
   NOTIFICATION_PROTO_PATH,
+  PROJECT_GRPC_SERVICE,
+  PROJECT_PROTO_PATH,
   USER_GRPC_SERVICE,
   USER_PROTO_PATH,
 } from '../grpc';
@@ -29,5 +31,11 @@ export const grpcConfiguration = registerAs('grpc', () => ({
     package: 'notification',
     protoPath: NOTIFICATION_PROTO_PATH,
     service: NOTIFICATION_GRPC_SERVICE,
+  },
+  projectService: {
+    url: `${process.env.GRPC_PROJECT_SERVICE_HOST}:${process.env.GRPC_PROJECT_SERVICE_PORT}`,
+    package: 'project',
+    protoPath: PROJECT_PROTO_PATH,
+    service: PROJECT_GRPC_SERVICE,
   },
 }));

@@ -19,6 +19,7 @@ export interface Team {
    estimateExtended?: boolean;
    estimateZero?: boolean;
    unestimatedAsOne?: boolean;
+   canManageMembers?: boolean;
 }
 
 export const teams: Team[] = [

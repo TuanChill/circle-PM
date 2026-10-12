@@ -34,6 +34,31 @@ jest.mock('../../data-access', () => {
 });
 
 describe('TeamsService role permissions', () => {
+  it('reports that a regular member cannot manage team members', async () => {
+    const team = new Team({
+      id: 'team-1',
+      name: 'Engineering',
+      workspaceId: 'workspace-1',
+    });
+    const em = {
+      findOne: jest.fn(async (entity: unknown) => (entity === Team ? team : null)),
+      find: jest.fn(async (entity: unknown) => {
+        if (entity === TeamMember) return [{ memberId: 'member-1', role: 'member' }];
+        if (entity === WorkspaceMember) return [{ memberId: 'member-1', role: 'Member' }];
+        return [];
+      }),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue(['team-1']),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(service.findOne('team-1', 'member-1')).resolves.toMatchObject({
+      id: 'team-1',
+      canManageMembers: false,
+    });
+  });
+
   it('does not let a visible regular member update team settings', async () => {
     const team = new Team({
       id: 'team-1',
@@ -193,6 +218,78 @@ describe('TeamsService role permissions', () => {
     expect(em.flush).not.toHaveBeenCalled();
   });
 
+  it('does not let an application admin manage a team they cannot access', async () => {
+    const team = new Team({
+      id: 'private-team',
+      name: 'Private',
+      workspaceId: 'workspace-1',
+    });
+    const em = {
+      findOne: jest.fn(async (entity: unknown) => (entity === Team ? team : null)),
+      persist: jest.fn(),
+      flush: jest.fn(),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue([]),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(
+      service.addMember('private-team', { memberId: 'member-2' }, 'admin-1', 'Admin'),
+    ).rejects.toThrow('Team private-team not found');
+    expect(em.persist).not.toHaveBeenCalled();
+    expect(em.flush).not.toHaveBeenCalled();
+  });
+
+  it('lets the workspace owner add a member when their membership role is stale', async () => {
+    const team = new Team({
+      id: 'team-1',
+      name: 'Engineering',
+      workspaceId: 'workspace-1',
+    });
+    let addedMembership: InstanceType<typeof TeamMember> | null = null;
+    const em = {
+      findOne: jest.fn(async (entity: unknown, where?: Record<string, unknown>) => {
+        if (entity === Team) return team;
+        if (entity === Workspace) return { id: 'workspace-1', ownerId: 'owner-1' };
+        if (entity === WorkspaceMember) {
+          return where?.memberId === 'member-2'
+            ? { memberId: 'member-2', role: 'Member' }
+            : { memberId: 'owner-1', role: 'Member' };
+        }
+        if (entity === TeamMember) {
+          return where?.memberId === 'owner-1' ? { role: 'member' } : addedMembership;
+        }
+        return null;
+      }),
+      find: jest.fn(async (entity: unknown) => {
+        if (entity === TeamMember) return addedMembership ? [addedMembership] : [];
+        if (entity === WorkspaceMember) {
+          return [
+            { memberId: 'owner-1', role: 'Member' },
+            { memberId: 'member-2', role: 'Member' },
+          ];
+        }
+        return [];
+      }),
+      persist: jest.fn((record: InstanceType<typeof TeamMember>) => {
+        addedMembership = record;
+      }),
+      flush: jest.fn(),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue(['team-1']),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(
+      service.addMember('team-1', { memberId: 'member-2' }, 'owner-1'),
+    ).resolves.toMatchObject({ id: 'team-1' });
+    expect(em.persist).toHaveBeenCalledWith(
+      expect.objectContaining({ teamId: 'team-1', memberId: 'member-2', role: 'member' }),
+    );
+  });
+
   it('lets a workspace admin add another workspace member to a team', async () => {
     const team = new Team({
       id: 'team-1',
@@ -251,9 +348,55 @@ describe('TeamsService role permissions', () => {
 
     await expect(
       service.addMember('team-1', { memberId: 'member-2' }, 'admin-1'),
-    ).resolves.toMatchObject({ id: 'team-1', joined: false });
+    ).resolves.toMatchObject({
+      id: 'team-1',
+      joined: false,
+      canManageMembers: true,
+    });
     expect(em.persist).toHaveBeenCalledWith(
       expect.objectContaining({ teamId: 'team-1', memberId: 'member-2', role: 'member' }),
+    );
+    expect(em.flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets an application admin add a workspace member to an accessible team', async () => {
+    const team = new Team({
+      id: 'PROD',
+      name: 'Product',
+      workspaceId: 'workspace-1',
+    });
+    let addedMembership: InstanceType<typeof TeamMember> | null = null;
+    const em = {
+      findOne: jest.fn(async (entity: unknown, where?: Record<string, unknown>) => {
+        if (entity === Team) return team;
+        if (entity === WorkspaceMember && where?.memberId === 'target-1') {
+          return { memberId: 'target-1', role: 'Member' };
+        }
+        if (entity === TeamMember) return addedMembership;
+        return null;
+      }),
+      find: jest.fn(async (entity: unknown) => {
+        if (entity === TeamMember) return addedMembership ? [addedMembership] : [];
+        if (entity === WorkspaceMember) {
+          return [{ memberId: 'target-1', role: 'Member' }];
+        }
+        return [];
+      }),
+      persist: jest.fn((record: InstanceType<typeof TeamMember>) => {
+        addedMembership = record;
+      }),
+      flush: jest.fn(),
+    } as unknown as EntityManager;
+    const workspacesService = {
+      getAccessibleTeamIds: jest.fn().mockResolvedValue(['PROD']),
+    };
+    const service = new TeamsService(em, workspacesService as never);
+
+    await expect(
+      service.addMember('PROD', { memberId: 'target-1' }, 'admin-1', 'Admin'),
+    ).resolves.toMatchObject({ id: 'PROD', canManageMembers: true });
+    expect(em.persist).toHaveBeenCalledWith(
+      expect.objectContaining({ teamId: 'PROD', memberId: 'target-1', role: 'member' }),
     );
     expect(em.flush).toHaveBeenCalledTimes(1);
   });

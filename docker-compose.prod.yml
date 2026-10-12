@@ -18,6 +18,9 @@ services:
   project-service:
     ports: !reset []
 
+  lark-bot-service:
+    ports: !reset []
+
   etcd:
     ports: !reset []
 

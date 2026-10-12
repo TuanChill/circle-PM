@@ -2,6 +2,7 @@ import {
   AllExceptionFilter,
   appCommonConfiguration,
   getWinstonConfig,
+  grpcConfiguration,
   HttpLoggerMiddleware,
   validationSchema,
 } from '@app/common';
@@ -22,6 +23,7 @@ import { IssueStatusesModule } from './issue-statuses/issue-statuses.module';
 import { IssueTemplatesModule } from './issue-templates/issue-templates.module';
 import { IssuesModule } from './issues/issues.module';
 import { LabelsModule } from './labels/labels.module';
+import { LarkIntegrationModule } from './lark-integration/lark-integration.module';
 import { MembersModule } from './members/members.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { PresenceModule } from './presence/presence.module';
@@ -44,7 +46,12 @@ import { appConfiguration, dbConfiguration } from '../config';
       envFilePath: ['.env', '../../.env'],
       validationSchema,
       validationOptions: { abortEarly: false },
-      load: [appCommonConfiguration, appConfiguration, dbConfiguration],
+      load: [
+        appCommonConfiguration,
+        appConfiguration,
+        dbConfiguration,
+        grpcConfiguration,
+      ],
     }),
     MikroOrmModule.forRootAsync({
       useFactory: (dbConfig: ConfigType<typeof dbConfiguration>) => {
@@ -72,6 +79,7 @@ import { appConfiguration, dbConfiguration } from '../config';
     MembersModule,
     TeamsModule,
     LabelsModule,
+    LarkIntegrationModule,
     ProjectsModule,
     ProjectStatusesModule,
     ProjectTemplatesModule,

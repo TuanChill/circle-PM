@@ -3,6 +3,7 @@ import { join } from 'path';
 /** Service names as declared in the .proto files. */
 export const USER_GRPC_SERVICE = 'UserService';
 export const NOTIFICATION_GRPC_SERVICE = 'NotificationService';
+export const PROJECT_GRPC_SERVICE = 'ProjectService';
 
 /**
  * proto-loader reads these from disk at runtime. tsc does not copy non-TS
@@ -13,6 +14,7 @@ const PROTO_DIR = join(__dirname, 'proto');
 
 export const USER_PROTO_PATH = join(PROTO_DIR, 'user.proto');
 export const NOTIFICATION_PROTO_PATH = join(PROTO_DIR, 'notification.proto');
+export const PROJECT_PROTO_PATH = join(PROTO_DIR, 'project.proto');
 
 /**
  * `defaults: false` leaves absent optional fields undefined rather than

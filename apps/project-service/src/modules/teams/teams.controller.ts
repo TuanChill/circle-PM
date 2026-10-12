@@ -34,8 +34,12 @@ export class TeamsController {
 
   @ApiOperation({ summary: 'Get team by ID' })
   @Get(':id')
-  findOne(@Param('id') id: string, @User('id') memberId: string) {
-    return this.teamsService.findOne(id, memberId);
+  findOne(
+    @Param('id') id: string,
+    @User('id') memberId: string,
+    @User('role') memberRole: string,
+  ) {
+    return this.teamsService.findOne(id, memberId, memberRole);
   }
 
   @ApiOperation({ summary: 'Get team members' })
@@ -56,8 +60,9 @@ export class TeamsController {
     @Param('id') id: string,
     @Body() dto: UpdateTeamDto,
     @User('id') memberId: string,
+    @User('role') memberRole: string,
   ) {
-    return this.teamsService.update(id, dto, memberId);
+    return this.teamsService.update(id, dto, memberId, memberRole);
   }
 
   @ApiOperation({ summary: 'Toggle join status for a team' })
@@ -72,8 +77,9 @@ export class TeamsController {
     @Param('id') id: string,
     @Body() dto: AddTeamMemberDto,
     @User('id') actorId: string,
+    @User('role') actorRole: string,
   ) {
-    return this.teamsService.addMember(id, dto, actorId);
+    return this.teamsService.addMember(id, dto, actorId, actorRole);
   }
 
   @ApiOperation({ summary: 'Remove member from team' })
@@ -82,8 +88,9 @@ export class TeamsController {
     @Param('id') id: string,
     @Param('memberId') memberId: string,
     @User('id') actorId: string,
+    @User('role') actorRole: string,
   ) {
-    return this.teamsService.removeMember(id, memberId, actorId);
+    return this.teamsService.removeMember(id, memberId, actorId, actorRole);
   }
 
   @ApiOperation({ summary: 'Delete team' })

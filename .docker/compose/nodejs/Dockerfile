@@ -6,7 +6,7 @@
 # packages it actually depends on. BuildKit cache mounts persist the pnpm
 # store and turbo's task cache across builds (and across the 4 services),
 # so re-running `docker compose build` after the first time is fast, and
-# @app/common/@app/core only get compiled once for all 4 services.
+# @app/common/@app/core only get compiled once for all Nest services.
 
 FROM node:22.15.0-alpine3.21 AS base
 ENV COREPACK_HOME=/opt/corepack

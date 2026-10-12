@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package project;
+
+service ProjectService {
+  rpc ClaimIssueAssignmentNotifications (ClaimIssueAssignmentNotificationsRequest) returns (ClaimIssueAssignmentNotificationsResponse);
+  rpc AcknowledgeIssueAssignmentNotification (AcknowledgeIssueAssignmentNotificationRequest) returns (IssueAssignmentNotificationResult);
+  rpc FailIssueAssignmentNotification (FailIssueAssignmentNotificationRequest) returns (IssueAssignmentNotificationResult);
+}
+
+message ClaimIssueAssignmentNotificationsRequest {
+  string worker_id = 1;
+  uint32 limit = 2;
+  uint32 lease_seconds = 3;
+}
+
+message IssueAssignmentDelivery {
+  string id = 1;
+  string workspace_id = 2;
+  string issue_identifier = 3;
+  string issue_title = 4;
+  string assignee_name = 5;
+  string open_id = 6;
+  string app_id = 7;
+  string app_secret_ciphertext = 8;
+  string domain = 9;
+  string group_chat_id = 10;
+}
+
+message ClaimIssueAssignmentNotificationsResponse {
+  repeated IssueAssignmentDelivery deliveries = 1;
+}
+
+message AcknowledgeIssueAssignmentNotificationRequest {
+  string id = 1;
+  string worker_id = 2;
+}
+
+message FailIssueAssignmentNotificationRequest {
+  string id = 1;
+  string worker_id = 2;
+  string error_code = 3;
+  bool retryable = 4;
+}
+
+message IssueAssignmentNotificationResult {
+  bool success = 1;
+}

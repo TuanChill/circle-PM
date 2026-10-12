@@ -6,8 +6,15 @@ import {
   PayloadValidationPipe,
   setupSwagger,
 } from '@app/common';
+import {
+  MicroserviceConfigOptions,
+  MicroserviceFactory,
+  MicroserviceName,
+} from '@app/core';
 import { ClassSerializerInterceptor } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import helmet from 'helmet';
 import { WinstonModule } from 'nest-winston';
 // oxlint-disable-next-line import/no-unassigned-import -- Nest decorators require reflect metadata at bootstrap.
@@ -23,6 +30,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger,
   });
+  const configService = app.get(ConfigService);
 
   const reflector = app.get(Reflector);
 
@@ -38,12 +46,23 @@ async function bootstrap() {
 
   setupSwagger(app, appName, ['/circle']);
 
+  await app.init();
+
+  const grpcListener = configService.get('grpc.projectService');
+  const grpcConfig = new MicroserviceFactory(configService).createConfig({
+    serviceName: MicroserviceName.ProjectService,
+    transport: Transport.GRPC,
+    options: { ...grpcListener },
+  } as unknown as MicroserviceConfigOptions);
+  await app.connectMicroservice<MicroserviceOptions>(grpcConfig);
+  await app.startAllMicroservices();
   await app.listen(appPort);
 
   logBootstrapInfo(app, {
     nodeEnv,
     logger,
     appPort,
+    msListener: { transport: 'gRPC', address: grpcListener?.url },
   });
 }
 
