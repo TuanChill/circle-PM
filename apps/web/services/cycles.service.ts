@@ -107,13 +107,6 @@ export const cyclesService = {
       );
    },
 
-   async createCycle(payload: Partial<Cycle>): Promise<Cycle> {
-      return apiClient<Cycle>('/circle/api/cycles', {
-         method: 'POST',
-         body: JSON.stringify(payload),
-      });
-   },
-
    async updateCycle(id: string, payload: Partial<Cycle>): Promise<Cycle> {
       return apiClient<Cycle>(`/circle/api/cycles/${id}`, {
          method: 'PATCH',

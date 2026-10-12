@@ -480,10 +480,6 @@ export default function IssueDetails() {
                               value={subIssueDescription}
                               onChange={(e) => setSubIssueDescription(e.target.value)}
                               onKeyDown={(e) => {
-                                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                                    e.preventDefault();
-                                    handleCreateSubIssue();
-                                 }
                                  if (e.key === 'Escape') {
                                     setIsAddingSubIssue(false);
                                  }

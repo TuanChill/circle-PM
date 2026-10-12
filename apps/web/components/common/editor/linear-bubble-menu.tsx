@@ -162,7 +162,7 @@ export function LinearBubbleMenu({ editor }: LinearBubbleMenuProps) {
                         ? 'bg-accent text-accent-foreground font-bold'
                         : 'text-muted-foreground hover:text-foreground'
                   )}
-                  title="Bold (Cmd+B)"
+                  title="Bold"
                >
                   <Bold className="size-3.5" />
                </button>
@@ -176,7 +176,7 @@ export function LinearBubbleMenu({ editor }: LinearBubbleMenuProps) {
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
                   )}
-                  title="Italic (Cmd+I)"
+                  title="Italic"
                >
                   <Italic className="size-3.5" />
                </button>
@@ -204,7 +204,7 @@ export function LinearBubbleMenu({ editor }: LinearBubbleMenuProps) {
                         ? 'bg-accent text-accent-foreground underline'
                         : 'text-muted-foreground hover:text-foreground'
                   )}
-                  title="Underline (Cmd+U)"
+                  title="Underline"
                >
                   <Underline className="size-3.5" />
                </button>
@@ -218,7 +218,7 @@ export function LinearBubbleMenu({ editor }: LinearBubbleMenuProps) {
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
                   )}
-                  title="Inline code (Cmd+E)"
+                  title="Inline code"
                >
                   <Code className="size-3.5" />
                </button>

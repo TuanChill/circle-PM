@@ -44,6 +44,8 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
 export class CyclesService {
+  private readonly cycleAutomationRuns = new Map<string, Promise<void>>();
+
   constructor(
     private readonly em: EntityManager,
     private readonly workspacesService: WorkspacesService,
@@ -205,9 +207,36 @@ export class CyclesService {
     await this.em.flush();
   }
 
-  private async syncCycleAutomation(teamId: string, settings: CycleSettings) {
-    if (!settings.enabled) return;
+  /** Reconcile every enabled team on the background schedule. */
+  async reconcileEnabledTeams() {
+    const settings = await this.em.find(CycleSettings, { enabled: true });
+    await Promise.all(settings.map(({ teamId }) => this.syncCycleAutomation(teamId)));
+  }
 
+  /** Serialize scheduled and request-triggered reconciliation within this service process. */
+  private async syncCycleAutomation(teamId: string) {
+    const previousRun = this.cycleAutomationRuns.get(teamId) ?? Promise.resolve();
+    const currentRun = previousRun
+      .catch(() => undefined)
+      .then(async () => {
+        const settings = await this.em.findOne(CycleSettings, { teamId });
+        if (settings?.enabled) {
+          await this.reconcileTeamCycles(teamId, settings);
+          return undefined;
+        }
+        return undefined;
+      });
+    this.cycleAutomationRuns.set(teamId, currentRun);
+    try {
+      await currentRun;
+    } finally {
+      if (this.cycleAutomationRuns.get(teamId) === currentRun) {
+        this.cycleAutomationRuns.delete(teamId);
+      }
+    }
+  }
+
+  private async reconcileTeamCycles(teamId: string, settings: CycleSettings) {
     await this.ensureUpcomingCycles(teamId, settings);
     const cycles = await this.em.find(
       Cycle,
@@ -464,17 +493,15 @@ export class CyclesService {
     const where: any = { teamId: { $in: accessibleTeamIds } };
     if (teamId) {
       if (!accessibleTeamIds.includes(teamId)) return [];
-      const settings = await this.em.findOne(CycleSettings, { teamId });
-      if (settings) await this.syncCycleAutomation(teamId, settings);
+      await this.syncCycleAutomation(teamId);
       where.teamId = teamId;
     } else {
       const settings = await this.em.find(CycleSettings, {
         teamId: { $in: accessibleTeamIds },
+        enabled: true,
       });
       await Promise.all(
-        settings.map((teamSettings) =>
-          this.syncCycleAutomation(teamSettings.teamId, teamSettings),
-        ),
+        settings.map((teamSettings) => this.syncCycleAutomation(teamSettings.teamId)),
       );
     }
 
@@ -497,7 +524,7 @@ export class CyclesService {
       this.em.persist(settings);
       await this.em.flush();
     }
-    if (settings.enabled) await this.syncCycleAutomation(teamId, settings);
+    if (settings.enabled) await this.syncCycleAutomation(teamId);
     return this.serializeSettings(settings);
   }
 
@@ -535,7 +562,7 @@ export class CyclesService {
     Object.assign(settings, next);
     if (isNew) this.em.persist(settings);
     await this.em.flush();
-    if (settings.enabled) await this.syncCycleAutomation(teamId, settings);
+    if (settings.enabled) await this.syncCycleAutomation(teamId);
     return this.serializeSettings(settings);
   }
 
@@ -618,7 +645,7 @@ export class CyclesService {
     }
 
     await this.em.flush();
-    await this.syncCycleAutomation(cycle.teamId, settings);
+    await this.syncCycleAutomation(cycle.teamId);
     return this.findOne(cycle.id, memberId);
   }
 

@@ -168,13 +168,6 @@ export function LinearEditor({
                if (handled) return true;
             }
 
-            // Cmd+Enter or Ctrl+Enter to commit / blur
-            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-               event.preventDefault();
-               view.dom.blur();
-               return true;
-            }
-
             // Escape key blurs editor when menu is closed
             if (event.key === 'Escape' && !slashState.isOpen) {
                event.preventDefault();

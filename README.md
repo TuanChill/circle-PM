@@ -25,6 +25,7 @@ A high-performance, monorepo microservices platform built with NestJS, optimized
   * [🧰 Tools & Management UI](#-tools--management-ui)
 * [🗄️ Production database access](#-production-database-access)
 * [📊 Project statuses and team issue workflows](./docs/project-statuses.md)
+* [🤖 Lark bot setup](./docs/lark-bot-setup.md)
 * [🔐 Demo API — Sign-Up & Login (cURL)](#-demo-api--sign-up--login-curl)
   * [Sign-Up](#sign-up)
   * [Login](#login)

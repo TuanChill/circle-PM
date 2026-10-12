@@ -90,8 +90,8 @@ export default function ExamplePage() {
 }
 ```
 
-`MainLayout` renders the sidebar, the `CreateIssueModalProvider` and a scrollable
-content area whose height depends on `headersNumber` (1 or 2 header rows of 40px).
+`MainLayout` renders the sidebar, issue-creation UI, and a scrollable content area whose
+height depends on `headersNumber` (1 or 2 header rows of 40px).
 
 ## Data model (single source of truth: `mock-data/`)
 

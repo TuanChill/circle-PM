@@ -12,7 +12,7 @@ import { EstimateSelector } from '../estimate-selector';
 import { StatusSelector } from '../status-selector';
 import { LabelSelector } from '@/components/layout/sidebar/create-new-issue/label-selector';
 import { RelationSelector } from '../relation-selector';
-import { renderProjectIcon } from '@/lib/project-utils';
+import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
 import { IssueRefRow } from './content-blocks';
 import { useDeleteIssueRelation, useUpdateIssue } from '@/hooks/queries/use-issues-query';
 
@@ -86,20 +86,24 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             </div>
          </Section>
 
-         {issue.project && (
-            <Section title="Project">
-               <div className="flex items-center gap-2 text-sm">
-                  {renderProjectIcon(issue.project.icon, 'size-4 text-muted-foreground shrink-0')}
-                  <span className="truncate">{issue.project.name}</span>
+         <Section title="Project">
+            <ProjectSelector
+               project={issue.project}
+               teamId={issue.teamId}
+               onChange={(project) =>
+                  updateIssueMutation.mutate({
+                     identifier: issue.identifier,
+                     data: { projectId: project?.id ?? null },
+                  })
+               }
+            />
+            {issue.project && detail.milestone && (
+               <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
+                  <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
+                  <span className="truncate">{detail.milestone}</span>
                </div>
-               {detail.milestone && (
-                  <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
-                     <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
-                     <span className="truncate">{detail.milestone}</span>
-                  </div>
-               )}
-            </Section>
-         )}
+            )}
+         </Section>
 
          <Section title="Relations">
             <div className="flex flex-col gap-1.5">

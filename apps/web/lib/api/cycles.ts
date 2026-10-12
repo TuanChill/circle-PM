@@ -12,13 +12,6 @@ export async function getCycleById(id: string): Promise<Cycle> {
    return apiClient<Cycle>(`/circle/api/cycles/${id}`);
 }
 
-export async function createCycle(payload: Partial<Cycle>): Promise<Cycle> {
-   return apiClient<Cycle>('/circle/api/cycles', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-   });
-}
-
 export async function updateCycle(id: string, payload: Partial<Cycle>): Promise<Cycle> {
    return apiClient<Cycle>(`/circle/api/cycles/${id}`, {
       method: 'PATCH',

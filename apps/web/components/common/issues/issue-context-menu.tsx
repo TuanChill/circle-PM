@@ -15,7 +15,6 @@ import {
    ContextMenuGroup,
    ContextMenuItem,
    ContextMenuSeparator,
-   ContextMenuShortcut,
    ContextMenuSub,
    ContextMenuSubContent,
    ContextMenuSubTrigger,
@@ -324,7 +323,6 @@ export function IssueContextMenu({ issue }: IssueContextMenuProps) {
 
                <ContextMenuItem onClick={handleSetDueDate}>
                   <CalendarClock className="size-4" /> Set due date...
-                  <ContextMenuShortcut>D</ContextMenuShortcut>
                </ContextMenuItem>
 
                <ContextMenuSeparator />
@@ -362,7 +360,6 @@ export function IssueContextMenu({ issue }: IssueContextMenuProps) {
 
             <ContextMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
                <Trash2 className="size-4" /> Delete...
-               <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
             </ContextMenuItem>
          </ContextMenuContent>
 

@@ -71,7 +71,7 @@ export interface UpdateIssuePayload {
    estimate?: number | null;
    assigneeId?: string | null;
    teamId?: string;
-   projectId?: string;
+   projectId?: string | null;
    cycleId?: string;
    parentIssueId?: string;
    labelIds?: string[];

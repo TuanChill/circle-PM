@@ -90,9 +90,6 @@ export function EmptyIssuesState({
                   className="h-8 text-xs font-medium bg-[#5E6AD2] hover:bg-[#5E6AD2]/90 text-white gap-2 shadow-sm"
                >
                   <span>{actionLabel}</span>
-                  <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium bg-white/20 text-white rounded">
-                     C
-                  </kbd>
                </Button>
             </div>
          </div>
@@ -120,7 +117,6 @@ export function EmptyIssuesState({
             </p>
          )}
 
-         {/* Action Button with Shortcut Chip */}
          <div className="mt-6">
             <Button
                type="button"
@@ -129,9 +125,6 @@ export function EmptyIssuesState({
                className="h-8 text-xs font-medium bg-[#5E6AD2] hover:bg-[#5E6AD2]/90 text-white px-3.5 rounded-md flex items-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
                <span>{actionLabel}</span>
-               <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium bg-white/20 text-white rounded">
-                  C
-               </kbd>
             </Button>
          </div>
       </div>

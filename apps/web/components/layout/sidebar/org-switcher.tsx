@@ -22,7 +22,6 @@ import {
    DropdownMenuLabel,
    DropdownMenuPortal,
    DropdownMenuSeparator,
-   DropdownMenuShortcut,
    DropdownMenuSub,
    DropdownMenuSubContent,
    DropdownMenuSubTrigger,
@@ -140,7 +139,6 @@ export function OrgSwitcher() {
                            <Link href={ROUTES.WORKSPACE.SETTINGS(currentOrgId)}>
                               <Settings className="size-4 mr-2" />
                               Settings
-                              <DropdownMenuShortcut>G then S</DropdownMenuShortcut>
                            </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -217,7 +215,6 @@ export function OrgSwitcher() {
                      >
                         <LogOut className="size-4 mr-2" />
                         Log out
-                        <DropdownMenuShortcut>⌥⇧Q</DropdownMenuShortcut>
                      </DropdownMenuItem>
                   </DropdownMenuContent>
                </DropdownMenu>
