@@ -352,7 +352,8 @@ input[type='search'] {
    align-items: center;
    justify-content: center;
    user-select: none;
-   margin-top: 0.25rem;
+   /* Match the checkbox centre to the first line of the task text. */
+   margin-top: calc(0.35rem + 0.375em);
    flex-shrink: 0;
 }
 
