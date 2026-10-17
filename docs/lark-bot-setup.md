@@ -26,7 +26,7 @@ Lark `open_id` values are scoped to an app. If the workspace changes its Lark ap
 
 ## Run the service
 
-Set `LARK_INTEGRATION_ENCRYPTION_KEY` in the deployment secret manager to a stable 32-byte hexadecimal key, generated for example with `openssl rand -hex 32`. Set the same value in `project-service` and `lark-bot-service`. Keep a protected backup of this key: saved app secrets cannot be decrypted without it. Do not rotate it without first re-encrypting the stored credentials.
+Lark is optional. Circle builds and runs without `LARK_INTEGRATION_ENCRYPTION_KEY`; assignment messages to Lark are unavailable until the integration is configured. To use Lark, set a stable 32-byte hexadecimal key in the deployment secret manager, generated for example with `openssl rand -hex 32`, and provide the same value to `project-service` and `lark-bot-service`. Keep a protected backup of this key: saved app secrets cannot be decrypted without it. Do not remove or rotate it while saved Lark credentials are in use without first re-encrypting them.
 
 `project-service` listens for internal gRPC on port `3314` by default. `lark-bot-service` uses `GRPC_PROJECT_SERVICE_HOST` and `GRPC_PROJECT_SERVICE_PORT` to reach it; the default Compose host is `project-service`. Compose passes both services the encryption key and keeps the gRPC listener on the internal network.
 
@@ -49,7 +49,7 @@ pnpm --filter project-service start:dev
 pnpm --filter lark-bot-service start:dev
 ```
 
-For Compose, use the repository’s normal build/start workflow after setting the required key in the deployment environment. Apply the project-service migration through the normal migration workflow after taking the database backup required by your deployment process.
+For Compose, use the repository’s normal build/start workflow. Set the encryption key only when enabling Lark notifications. Apply the project-service migration through the normal migration workflow after taking the database backup required by your deployment process.
 
 The health endpoint is `/circle/lark-bot/health` on port `3305`. It reports worker state and the last successful poll/error code; it never includes app credentials or message payloads.
 
