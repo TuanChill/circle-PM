@@ -21,6 +21,7 @@ import { LinearEditor } from '@/components/common/editor/linear-editor';
 import { contentBlocksToMarkdown } from '@/lib/content-blocks-to-markdown';
 import { markdownToContentBlocks } from '@/lib/markdown-to-content-blocks';
 import { ProjectResourcesEditor } from './project-resources-editor';
+import { FileAttachments } from '@/components/common/attachments/file-attachments';
 import QueryErrorState from '@/components/common/query-error-state';
 
 interface ProjectOverviewProps {
@@ -307,6 +308,8 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                            resources={detail.resources}
                         />
                      </div>
+
+                     <FileAttachments target={{ projectId: project.id }} />
                   </div>
 
                   {/* Update CTA */}
